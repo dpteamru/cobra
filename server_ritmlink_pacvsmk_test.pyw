@@ -31,9 +31,11 @@ while True:
         while True:
             data = connection.recv(32)
             #print(data)
-            data = data.decode()
+            data_dec = data.decode()
             if data != '':
                 print(f'Получено: {data}')
+                print(f'Получено дек: {data_dec}')
+                sock.sendall('eee'.encode())
             else:
                 print('Нет данных от:', client_address)
                 break
