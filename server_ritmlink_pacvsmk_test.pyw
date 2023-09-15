@@ -1,9 +1,20 @@
 import socket
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock = socket.socket()
 
 # Привязываем сокет к порту
-server_address = ('127.0.0.1', 3000)
+
+host = socket.gethostname()
+print(host)
+hhost = socket.getfqdn(host)
+print(hhost)
+hhhost = socket.getfqdn()
+print(hhhost)
+addr = socket.getaddrinfo(host, 3000)
+print(addr)
+
+server_address = (host, 20000)
 print('Старт сервера на {} порт {}'.format(*server_address))
 sock.bind(server_address)
 
