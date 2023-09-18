@@ -1,4 +1,5 @@
 import socket
+import time
 
 #sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock = socket.socket()
@@ -7,14 +8,10 @@ sock = socket.socket()
 
 host = socket.gethostname()
 print(host)
-hhost = socket.getfqdn(host)
-print(hhost)
-hhhost = socket.getfqdn()
-print(hhhost)
-addr = socket.getaddrinfo(host, 3000)
+addr = socket.getaddrinfo(host, 20000)
 print(addr)
 
-server_address = (host, 20000)
+server_address = ('192.168.43.242', 20000)
 print('Старт сервера на {} порт {}'.format(*server_address))
 sock.bind(server_address)
 
@@ -30,12 +27,15 @@ while True:
         # Принимаем данные порциями
         while True:
             data = connection.recv(32)
-            #print(data)
+            print(data)
             data_dec = data.decode()
-            if data != '':
+            #data_dec = data.decode()
+            if data_dec != '':
+                
+                print(time.ctime( time.time() ))
                 print(f'Получено: {data}')
                 print(f'Получено дек: {data_dec}')
-                sock.sendall('eee'.encode())
+                #connection.sendall('eee'.encode())
             else:
                 print('Нет данных от:', client_address)
                 break
