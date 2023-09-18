@@ -11,12 +11,16 @@ print(host)
 addr = socket.getaddrinfo(host, 20000)
 print(addr)
 
-server_address = ('192.168.43.242', 20000)
+server_address = ('', 20000)
 print('Старт сервера на {} порт {}'.format(*server_address))
 sock.bind(server_address)
 
 # Слушаем входящие подключения
 sock.listen()
+
+ack = chr(6)
+ack = ack.encode('utf-8')
+print(ack)
 
 while True:
     # ждем соединения
@@ -29,13 +33,13 @@ while True:
             data = connection.recv(32)
             print(data)
             data_dec = data.decode()
-            #data_dec = data.decode()
             if data_dec != '':
                 
                 print(time.ctime( time.time() ))
                 print(f'Получено: {data}')
                 print(f'Получено дек: {data_dec}')
-                #connection.sendall('eee'.encode())
+                
+                connection.sendall(ack)
             else:
                 print('Нет данных от:', client_address)
                 break
