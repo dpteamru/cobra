@@ -16,7 +16,7 @@ class Server():
 
         response = requests.post(url_test, json = payload)
         
-        basic = response['basic']
+        basic = response.text['basic']
 
         url_test = 'http://localhost:8080/restapi/objects/obj/'
 
