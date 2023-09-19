@@ -11,12 +11,14 @@ class Server():
         self.socket.listen()
 
     def request_test(self):
-        url_test = 'http://localhost:8080/restapi/users/login/'
-        
-        payload = {'login': 'root', 'password': 'password'}
-        
-        #payload = {'objectId': 500}
+        #url_test = 'http://localhost:8080/restapi/users/login/'
+        url_test = 'http://localhost:8080/restapi/objects/obj/'
+
+        #payload = {'login': 'root', 'password': 'password'}
+        payload = {'objectId': 500}
+
         #objects/obj-card/
+        
         r =  requests.post(url_test, json = payload)
         print(r.text)
 
