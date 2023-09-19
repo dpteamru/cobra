@@ -12,18 +12,23 @@ class Server():
 
     def request_test(self):
         url_test = 'http://localhost:8080/restapi/users/login/'
-        #url_test = 'http://localhost:8080/restapi/objects/obj/'
-
-        #headers = {}
-
         payload = {'login': 'root', 'password': 'password'}
-        #payload = {'objectId': 500}
+
+        response = requests.post(url_test, json = payload)
+        
+        basic = response['basic']
+
+        url_test = 'http://localhost:8080/restapi/objects/obj/'
+
+        headers = {'Authorization': 'Basic ' + basic}
+       
+        payload = {'objectId': 500}
 
         #objects/obj-card/
         
-        r =  requests.post(url_test, json = payload)
+        response = requests.post(url_test, headers = headers, json = payload)
         
-        print(r.text)
+        print(response.json())
 
     def connect_loop(self):
         while True:
