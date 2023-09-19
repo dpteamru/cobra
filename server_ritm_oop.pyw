@@ -28,7 +28,7 @@ class Server():
         
         #response = requests.post(url_test, headers = headers, json = payload)
         
-        print(response.json())
+        print(response.json()['basic'])
         print(response.request.headers)
 
     def connect_loop(self):
