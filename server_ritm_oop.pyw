@@ -13,11 +13,11 @@ class Server():
     def request_test(self):
         url_test = 'http://localhost:8080/restapi/users/login/'
         
-        payload = {'login': '*****', 'password': '*****'}
+        payload = {'login': 'root', 'password': 'password'}
         
         #payload = {'objectId': 500}
         #objects/obj-card/
-        r =  requests.get(url_test, params = payload)
+        r =  requests.post(url_test, json = payload)
         print(r.text)
 
     def connect_loop(self):
