@@ -22,7 +22,7 @@ class Server():
 
         headers = {'Authorization': 'Basic ' + basic}
        
-        payload = {'objectId': 500}
+        payload = {'objectId': 1280}
 
         #objects/obj-card/
         
