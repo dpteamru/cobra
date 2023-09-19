@@ -18,17 +18,28 @@ class Server():
         
         basic = response.json()['basic']
 
-        url_test = 'http://localhost:8080/restapi/objects/obj/'
-
+        #objects/objects-tree-set/
+        url_test = 'http://localhost:8080/restapi/objects/objects-tree-set/'
         headers = {'Authorization': 'Basic ' + basic}
-       
-        payload = {'objectId': 1280}
+        payload = {'groupType': 1}
+        
+##        #objects/obj/
+##        url_test = 'http://localhost:8080/restapi/objects/obj/'
+##        headers = {'Authorization': 'Basic ' + basic}
+##        payload = {'objectId': [500]}
 
-        #objects/obj-card/
+##        #objects/obj-card/
+##        url_test = 'http://localhost:8080/restapi/objects/obj-card/'
+##        headers = {'Authorization': 'Basic ' + basic}
+##        payload = {'objectId': [500]}
+
+        #objects/obj-by-extid/
+##        url_test = 'http://localhost:8080/restapi/objects/obj-by-extid/'
+##        headers = {'Authorization': 'Basic ' + basic}
+##        payload = {'extId':[500], 'tz':4}
         
         response = requests.post(url_test, headers = headers, json = payload)
         
-        #print(response.json()['basic'])
         print(response.request.headers)
         print(response.text)
 
