@@ -40,7 +40,8 @@ class Server():
 ##        headers = {'Authorization': 'Basic ' + basic}
 ##        payload = {'extId': [594], 'tz':11}
         
-        response = requests.post(url_test, headers = headers, json = payload)
+        #response = requests.post(url_test, headers = headers, json = payload)
+        response = requests.post(url_test, json = payload)
         
         print(response.request.headers)
         print(response.text)
