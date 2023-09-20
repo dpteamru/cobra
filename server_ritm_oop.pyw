@@ -25,15 +25,15 @@ class Server():
 ##        headers = {'Authorization': 'Basic ' + basic}
 ##        payload = {'groupType': 1}
         
-        #objects/obj/
-        url_test = 'http://localhost:8080/restapi/objects/obj/'
+##        #objects/obj/
+##        url_test = 'http://localhost:8080/restapi/objects/obj/'
+##        headers = {'Authorization': 'Basic ' + basic}
+##        payload = {'objectId': [252]}
+
+        #objects/obj-card/
+        url_test = 'http://localhost:8080/restapi/objects/obj-card/'
         headers = {'Authorization': 'Basic ' + basic}
         payload = {'objectId': [252]}
-
-##        #objects/obj-card/
-##        url_test = 'http://localhost:8080/restapi/objects/obj-card/'
-##        headers = {'Authorization': 'Basic ' + basic}
-##        payload = {'objectId': [500]}
 
         #objects/obj-by-extid/
 ##        url_test = 'http://localhost:8080/restapi/objects/obj-by-extid/'
