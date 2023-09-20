@@ -20,15 +20,15 @@ class Server():
 
         #id_req = 500
 
-        #objects/objects-tree-set/
-        url_test = 'http://localhost:8080/restapi/objects/objects-tree-set/'
-        headers = {'Authorization': 'Basic ' + basic}
-        payload = {'groupType': 1}
-        
-##        #objects/obj/
-##        url_test = 'http://localhost:8080/restapi/objects/obj/'
+##        #objects/objects-tree-set/
+##        url_test = 'http://localhost:8080/restapi/objects/objects-tree-set/'
 ##        headers = {'Authorization': 'Basic ' + basic}
-##        payload = {'objectId': [500]}
+##        payload = {'groupType': 1}
+        
+        #objects/obj/
+        url_test = 'http://localhost:8080/restapi/objects/obj/'
+        headers = {'Authorization': 'Basic ' + basic}
+        payload = {'objectId': [91, 500]}
 
 ##        #objects/obj-card/
 ##        url_test = 'http://localhost:8080/restapi/objects/obj-card/'
