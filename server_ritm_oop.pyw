@@ -18,6 +18,8 @@ class Server():
         
         basic = response.json()['basic']
 
+        #id_req = 500
+
         #objects/objects-tree-set/
         url_test = 'http://localhost:8080/restapi/objects/objects-tree-set/'
         headers = {'Authorization': 'Basic ' + basic}
