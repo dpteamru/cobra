@@ -35,15 +35,20 @@ class Server():
 ##        headers = {'Authorization': 'Basic ' + basic}
 ##        payload = {'objectId': 252}
 
-        #objects/obj-by-extid/
-        url_test = 'http://localhost:8080/restapi/objects/obj-by-extid/'
+##        #objects/obj-by-extid/
+##        url_test = 'http://localhost:8080/restapi/objects/obj-by-extid/'
+##        headers = {'Authorization': 'Basic ' + basic}
+##        payload = {'extId': [594], 'tz': 3}
+
+        #objects/obj-details/
+        url_test = 'http://localhost:8080/restapi/objects/obj-details/'
         headers = {'Authorization': 'Basic ' + basic}
-        payload = {'extId': [594], 'tz': 3}
+        payload = {'objectId': [594], 'tz': 3}
         
         response = requests.post(url_test, headers = headers, json = payload)
         #response = requests.post(url_test, json = payload)
         
-        print(response.request.headers)
+        #print(response.request.headers)
         print(response.text)
 
     def connect_loop(self):
