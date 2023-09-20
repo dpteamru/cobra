@@ -28,7 +28,7 @@ class Server():
         #objects/obj/
         url_test = 'http://localhost:8080/restapi/objects/obj/'
         headers = {'Authorization': 'Basic ' + basic}
-        payload = {'objectId': [91, 500]}
+        payload = {'objectId': [252]}
 
 ##        #objects/obj-card/
 ##        url_test = 'http://localhost:8080/restapi/objects/obj-card/'
