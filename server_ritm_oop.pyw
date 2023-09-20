@@ -30,15 +30,15 @@ class Server():
 ##        headers = {'Authorization': 'Basic ' + basic}
 ##        payload = {'objectId': [252]}
 
-        #objects/obj-card/
-        url_test = 'http://localhost:8080/restapi/objects/obj-card/'
-        headers = {'Authorization': 'Basic ' + basic}
-        payload = {'objectId': 252}
-
-##        #objects/obj-by-extid/
-##        url_test = 'http://localhost:8080/restapi/objects/obj-by-extid/'
+##        #objects/obj-card/
+##        url_test = 'http://localhost:8080/restapi/objects/obj-card/'
 ##        headers = {'Authorization': 'Basic ' + basic}
-##        payload = {'extId': [594], 'tz':11}
+##        payload = {'objectId': 252}
+
+        #objects/obj-by-extid/
+        url_test = 'http://localhost:8080/restapi/objects/obj-by-extid/'
+        headers = {'Authorization': 'Basic ' + basic}
+        payload = {'extId': [594], 'tz': 3}
         
         response = requests.post(url_test, headers = headers, json = payload)
         #response = requests.post(url_test, json = payload)
