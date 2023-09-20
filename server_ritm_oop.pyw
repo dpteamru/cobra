@@ -38,7 +38,7 @@ class Server():
         #objects/obj-by-extid/
         url_test = 'http://localhost:8080/restapi/objects/obj-by-extid/'
         headers = {'Authorization': 'Basic ' + basic}
-        payload = {'extId':[500, 594], 'tz':4}
+        payload = {'extId': [594], 'tz':3}
         
         response = requests.post(url_test, headers = headers, json = payload)
         
