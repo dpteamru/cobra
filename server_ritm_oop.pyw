@@ -32,13 +32,14 @@ class Server():
         payload = {'objectId': id_ritm}
         response = requests.post(url_test, headers = headers, json = payload)
 
-        id_pac = response.json()['settings']['equipmentIds'][0]
+        id_pac = response.json()['settings']['equipmentIds']
+        id_pac = id_pac[2 : -2]
 
         print(id_pac)
 
         #https://pakvcmk.ru/api/login
-        url_test = 'https://pakvcmk.ru/api/login'
-        payload = {'username': '[bn8zh04emj]', 'password': '[kdydxj]'}
+        url_test = 'https://demopakvcmk.ru/api/login'
+        payload = {'username': 'bn8zh04emj', 'password': 'kdydxj'}
         response = requests.post(url_test, json = payload)
 
         #bearer = response.json()['token']
