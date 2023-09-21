@@ -32,9 +32,9 @@ class Server():
         payload = {'objectId': id_ritm}
         response = requests.post(url_test, headers = headers, json = payload)
 
-        print(response.text)
+        #print(response.text)
 
-        id_pac = response.json()['equipmentIds']
+        id_pac = response.json()['Settings']['equipmentIds']
         print(id_pac)
 
     def connect_loop(self):
