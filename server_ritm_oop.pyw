@@ -30,10 +30,10 @@ class Server():
 ##        headers = {'Authorization': 'Basic ' + basic}
 ##        payload = {"objectId": [252]}
 
-##        #objects/obj-card/ +
-##        url_test = 'http://localhost:8080/restapi/objects/obj-card/'
-##        headers = {'Authorization': 'Basic ' + basic}
-##        payload = {'objectId': 252}
+        #objects/obj-card/ +
+        url_test = 'http://localhost:8080/restapi/objects/obj-card/'
+        headers = {'Authorization': 'Basic ' + basic}
+        payload = {'objectId': 293}
 
 ##        #objects/obj-by-extid/
 ##        url_test = 'http://localhost:8080/restapi/objects/obj-by-extid/'
@@ -45,32 +45,32 @@ class Server():
 ##        headers = {'Authorization': 'Basic ' + basic}
 ##        payload = {'objectId':[594], 'tz':3}
 
-        #alerts/objects-in-alarm/
-        url_test = 'http://localhost:8080/restapi/alerts/objects-in-alarm/'
-        headers = {'Authorization': 'Basic ' + basic}
-        
-        #response = requests.post(url_test, headers = headers, json = payload)
-        #response = requests.post(url_test, json = payload)
-        response = requests.post(url_test, headers = headers)
-
-        #список внутренних id объектов, которые находятся в тревоге
-        id_list_inAlarm = [obj_in_alarm['id'] for obj_in_alarm in response.json()]
-        print(id_list_inAlarm)
-
-        #теперь берём карточки этих объектов и сравниваем imei из сообщения ритм-линк с imei в карточке
-        url_test = 'http://localhost:8080/restapi/objects/obj-card/'
-        headers = {'Authorization': 'Basic ' + basic}
-        
-        payload = {'objectId': id_list_inAlarm[0]}
+##        #alerts/objects-in-alarm/
+##        url_test = 'http://localhost:8080/restapi/alerts/objects-in-alarm/'
+##        headers = {'Authorization': 'Basic ' + basic}
+##        
         response = requests.post(url_test, headers = headers, json = payload)
-        print(response.text)
-
-        payload = {'objectId': id_list_inAlarm[1]}
-        response = requests.post(url_test, headers = headers, json = payload)
-        print(response.text)
+##        #response = requests.post(url_test, json = payload)
+##        response = requests.post(url_test, headers = headers)
+##
+##        #список внутренних id объектов, которые находятся в тревоге
+##        id_list_inAlarm = [obj_in_alarm['id'] for obj_in_alarm in response.json()]
+##        print(id_list_inAlarm)
+##
+##        #теперь берём карточки этих объектов и сравниваем imei из сообщения ритм-линк с imei в карточке
+##        url_test = 'http://localhost:8080/restapi/objects/obj-card/'
+##        headers = {'Authorization': 'Basic ' + basic}
+##        
+##        payload = {'objectId': id_list_inAlarm[0]}
+##        response = requests.post(url_test, headers = headers, json = payload)
+##        print(response.text)
+##
+##        payload = {'objectId': id_list_inAlarm[1]}
+##        response = requests.post(url_test, headers = headers, json = payload)
+##        print(response.text)
         
         #print(response.request.headers)
-        #print(response.text)
+        print(response.text)
 
     def connect_loop(self):
         while True:
