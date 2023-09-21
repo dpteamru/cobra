@@ -25,6 +25,7 @@ class Server():
         response = requests.post(url_test, headers = headers, json = payload)
 
         id_ritm = response.json()[0]['id']
+        print(id_ritm)
 
         #objects/obj-card/
         url_test = 'http://localhost:8080/restapi/objects/obj-card/'
