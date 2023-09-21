@@ -38,7 +38,7 @@ class Server():
 
         #https://pakvcmk.ru/api/login
         url_test = 'https://pakvcmk.ru/api/login'
-        payload = {'username': 'bn8zh04emj', 'password': 'kdydxj'}
+        payload = {'username': '[bn8zh04emj]', 'password': '[kdydxj]'}
         response = requests.post(url_test, json = payload)
 
         #bearer = response.json()['token']
