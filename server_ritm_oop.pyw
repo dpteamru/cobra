@@ -34,7 +34,7 @@ class Server():
 
         #print(response.text)
 
-        id_pac = response.json()['Settings']['equipmentIds']
+        id_pac = response.json()['settings']['equipmentIds']
         print(id_pac)
 
     def connect_loop(self):
