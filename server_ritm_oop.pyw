@@ -33,7 +33,7 @@ class Server():
         #objects/obj-card/ +
         url_test = 'http://localhost:8080/restapi/objects/obj-card/'
         headers = {'Authorization': 'Basic ' + basic}
-        payload = {'objectId': 293}
+        payload = {'objectId': 312}
 
 ##        #objects/obj-by-extid/
 ##        url_test = 'http://localhost:8080/restapi/objects/obj-by-extid/'
