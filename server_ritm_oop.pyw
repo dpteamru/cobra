@@ -24,9 +24,10 @@ class Server():
         payload = {"objType":1, "q":"1000000000001280"}
         response = requests.post(url_test, headers = headers, json = payload)
 
+        print(response.text)
+
         id_pac = response.json()['equipmentIds']
 
-        print(response.text)
         print(id_pac)
 
 
