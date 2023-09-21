@@ -24,11 +24,17 @@ class Server():
         payload = {"objType":1, "q":"1000000000001280"}
         response = requests.post(url_test, headers = headers, json = payload)
 
+        id_ritm = response.json()[0]['id']
+
+        #objects/obj-card/
+        url_test = 'http://localhost:8080/restapi/objects/obj-card/'
+        headers = {'Authorization': 'Basic ' + basic}
+        payload = {'objectId': id_ritm}
+
+        #id_pac = response.json()['equipmentIds']
+
+
         print(response.text)
-
-        id_pac = response.json()['equipmentIds']
-
-        print(id_pac)
 
 
     def connect_loop(self):
