@@ -38,7 +38,7 @@ class Server():
         print(id_pac)
 
         #https://pakvcmk.ru/api/login
-        url_test = 'https://demopakvcmk.ru/api/login'
+        url_test = 'https://demo.pakvcmk.ru/api/login'
         payload = {'username': 'bn8zh04emj', 'password': 'kdydxj'}
         response = requests.post(url_test, json = payload)
 
