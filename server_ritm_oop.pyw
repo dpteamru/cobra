@@ -92,9 +92,8 @@ class Server():
 
                         if 'E' in data_dec:
                             print('Нужно отправить тревогу')
-
-                            
-
+                            self.send_alarm_in_pac()
+                            print('Тревога отправлена')
                             
                             ack = chr(6).encode('utf-8')
                             connection.sendall(ack)
@@ -110,7 +109,7 @@ class Server():
 
 
 server = Server()
-#server.connect_loop()
-server.send_alarm_in_pac()
+server.connect_loop()
+#server.send_alarm_in_pac()
 #server.request_test()
 
