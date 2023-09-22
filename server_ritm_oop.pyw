@@ -52,9 +52,14 @@ class Server():
         payload = {'username': 'bn8zh04emj', 'password': 'kdydxj'}
         response = requests.post(url_test, json = payload)
 
-        #bearer = response.json()['token']
+        bearer = response.json()['token']
 
-        #'Authorization:Bearer токен'
+        headers = {'Authorization':'Bearer ' + bearer}
+        id_test = '2027d463-56c5-49fd-9f43-7af80f5e44df'
+
+        url_test = 'https://demo.pakvcmk.ru/api/objects/' + id_test
+        response = requests.get(url_test, headers = headers)
+        
         #url_test = 'https://demo.pakvcmk.ru/api/alert'
 ##        {
 ##            "object_id":"ID объекта в системе",
