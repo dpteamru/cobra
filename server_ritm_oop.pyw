@@ -49,7 +49,7 @@ class Server():
     def send_alarm_in_pac(self):
         #https://pakvcmk.ru/api/login
         url_test = 'https://demo.pakvcmk.ru/api/login'
-        payload = {'username': 'bn8zh04emj', 'password': 'kdydxj'}
+        payload = {'username': 'emp220923', 'password': '7i0f8g'}
         response = requests.post(url_test, json = payload)
 
         bearer = response.json()['token']
@@ -67,7 +67,7 @@ class Server():
                 [
                     {
                     #"zone_id": "ID зоны",
-                    "type_id": 0, 
+                    "type_id": 0,
                     "comment": "Тестовая тревога"
                     }
                 ]}
