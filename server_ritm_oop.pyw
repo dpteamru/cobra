@@ -66,8 +66,8 @@ class Server():
             "events":
                 [
                     {
-                    #"zone_id": "ID зоны", //Необязательное поле
-                    "type_id": 0 #Тип события,
+                    #"zone_id": "ID зоны",
+                    "type_id": 0, 
                     "comment": "Тестовая тревога"
                     }
                 ]}
