@@ -54,6 +54,20 @@ class Server():
 
         #bearer = response.json()['token']
 
+        #'Authorization:Bearer токен'
+        #url_test = 'https://demo.pakvcmk.ru/api/alert'
+##        {
+##            "object_id":"ID объекта в системе",
+##            "events":
+##                  [
+##                  {
+##                  "zone_id": "ID зоны", //Необязательное поле
+##                  "type_id": 0 //Тип события,
+##                  "comment": "Комментарий события"
+##                  }
+##                  ]
+##        }
+
         
         
         print(response.text)
