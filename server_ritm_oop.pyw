@@ -83,7 +83,7 @@ class Server():
             try:
                 print('Подключено к:', client_address)
                 while True:
-                    data = connection.recv(32)
+                    data = connection.recv(64)
                     data_dec = data.decode()
                     if data_dec != '':
                         print(time.ctime( time.time() ))
