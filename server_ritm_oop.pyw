@@ -57,23 +57,21 @@ class Server():
         headers = {'Authorization':'Bearer ' + bearer}
         id_test = '2027d463-56c5-49fd-9f43-7af80f5e44df'
 
-        url_test = 'https://demo.pakvcmk.ru/api/objects/' + id_test
-        response = requests.get(url_test, headers = headers)
+##        url_test = 'https://demo.pakvcmk.ru/api/objects/' + id_test
+##        response = requests.get(url_test, headers = headers)
         
-        #url_test = 'https://demo.pakvcmk.ru/api/alert'
-##        {
-##            "object_id":"ID объекта в системе",
-##            "events":
-##                  [
-##                  {
-##                  "zone_id": "ID зоны", //Необязательное поле
-##                  "type_id": 0 //Тип события,
-##                  "comment": "Комментарий события"
-##                  }
-##                  ]
-##        }
-
-        
+        url_test = 'https://demo.pakvcmk.ru/api/alert'
+        payload = {
+            "object_id": id_test,
+            "events":
+                [
+                    {
+                    #"zone_id": "ID зоны", //Необязательное поле
+                    "type_id": 0 #Тип события,
+                    "comment": "Тестовая тревога"
+                    }
+                ]}
+        response = requests.post(url_test, headers = headers, json = payload)        
         
         print(response.text)
     
