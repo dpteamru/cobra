@@ -46,6 +46,19 @@ class Server():
         
         print(response.text)
 
+    def send_alarm_in_pac(self):
+        #https://pakvcmk.ru/api/login
+        url_test = 'https://demo.pakvcmk.ru/api/login'
+        payload = {'username': 'bn8zh04emj', 'password': 'kdydxj'}
+        response = requests.post(url_test, json = payload)
+
+        #bearer = response.json()['token']
+
+        
+        
+        print(response.text)
+    
+
     def connect_loop(self):
         while True:
             print('Ожидание соединения...')
@@ -62,6 +75,10 @@ class Server():
 
                         if 'E' in data_dec:
                             print('Нужно отправить тревогу')
+
+                            
+
+                            
                             ack = chr(6).encode('utf-8')
                             connection.sendall(ack)
                         elif 'R' in data_dec:
@@ -77,4 +94,6 @@ class Server():
 
 server = Server()
 #server.connect_loop()
-server.request_test()
+server.send_alarm_in_pac()
+#server.request_test()
+
