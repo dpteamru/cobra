@@ -66,7 +66,7 @@ class Server():
         headers = {'Authorization': 'Basic ' + basic}
         
         imei = mess[7 : 23]
-        print(imei)
+        #print(imei)
 
         #objects/obj-search/
         url_test = 'http://localhost:8080/restapi/objects/obj-search/'
@@ -74,7 +74,7 @@ class Server():
         payload = {"objType":1, "q":imei}
         response = post(url_test, headers = headers, json = payload)
 
-        print(dumps(response.json(), indent = 4))
+        #print(dumps(response.json(), indent = 4))
         id_ritm = response.json()[0]['id']
 
         #objects/obj-card/
@@ -84,7 +84,6 @@ class Server():
 
         id_pac = response.json()['settings']['equipmentIds']
         id_pac = id_pac[2 : -2]
-        print(id_pac)
 
         print(id_pac)
         return id_pac
@@ -171,10 +170,10 @@ class Server():
 
 
 server = Server()
-mess = '5337 181000000000001280E76000000¶'
-id_pac = server.request_from_georitm_id_pac(mess)
+##mess = '5337 181000000000001280E76000000¶'
+##id_pac = server.request_from_georitm_id_pac(mess)
 
-#server.connect_loop()
+server.connect_loop()
 
 ##id_test = '2027d463-56c5-49fd-9f43-7af80f5e44df'
 ##server.send_alarm_to_pac(id_test)
