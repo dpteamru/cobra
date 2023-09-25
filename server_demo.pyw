@@ -4,11 +4,12 @@ from requests import get, post
 from threading import Thread
 from queue import Empty, Queue
 from json import dumps
+from settings import port
 
 class Server():
     def __init__(self):
         self.socket = socket.socket()
-        server_address = ('', 20000)
+        server_address = ('', port)
         print('Старт сервера, порт {}'.format(server_address[1]))
         self.socket.bind(server_address)
         self.socket.listen()
