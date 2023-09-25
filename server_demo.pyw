@@ -41,19 +41,24 @@ class Server():
                              'zona': mess[28 : 30],
                              'plume': mess[30 : 33],
                              'alert_id': alert_pac['alert_id']}
-                    self.alerts.add(alert)
+                    self.alerts.append(alert)
                     print('Тревога отправлена')
                     print()
                 elif 'R' in mess:
                     print('Отменяем тревогу')
                     print()
-                    
                     alert = [alert for alert in self.alerts if alert['imei'] == imei]
-                    id_alert = alert['alert_id']
-                    self.send_cancel_to_pac(id_alert)
-                    self.alerts.remove(alert)
-                    print('Тревога отменена')
-                    print()
+                    if alert != []:
+                        alert = alert[0]
+                        id_alert = alert['alert_id']
+                        self.send_cancel_to_pac(id_alert)
+                        self.alerts.remove(alert)
+                        print('Отмена тревоги')
+                        print()
+                        
+                    else:
+                        print('Для данного сообщения о восстановлении нет сохраненных тревог')
+                        print('Не получилось послать отмену тревоги')
                 
                 queue.task_done()
                 
@@ -153,9 +158,9 @@ class Server():
                         
                         print(f'Получено из Ritm-link: {data_dec}')
 
-                        if ('E' in data_dec) or ('R' in data_dec):
+                        mess_code = data_dec[24 : 27]
+                        if (int(mess_code) < 300) and (('E' in data_dec) or ('R' in data_dec)):
 
-                            #print(f'Вставляем сообщение {data_dec} в очередь\n')
                             self.queue.put(data_dec)
                             
                             ack = chr(6).encode('utf-8')
@@ -170,10 +175,10 @@ class Server():
 
 
 server = Server()
-##mess = '5337 181000000000001280E76000000¶'
-##id_pac = server.request_from_georitm_id_pac(mess)
-
 server.connect_loop()
+
+#mess = '5337 181000000000001280E76000000¶'
+##id_pac = server.request_from_georitm_id_pac(mess)
 
 ##id_test = '2027d463-56c5-49fd-9f43-7af80f5e44df'
 ##server.send_alarm_to_pac(id_test)
