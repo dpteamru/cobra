@@ -171,7 +171,7 @@ class Server():
 
 server = Server()
 mess = '5337 181000000000001280E76000000¶'
-id_pac = self.request_from_georitm_id_pac(mess)
+id_pac = server.request_from_georitm_id_pac(mess)
 
 #server.connect_loop()
 
