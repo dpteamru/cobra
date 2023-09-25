@@ -74,7 +74,7 @@ class Server():
         payload = {"objType":1, "q":imei}
         response = post(url_test, headers = headers, json = payload)
 
-        print(json.dumps(response.json(), indent = 4))
+        print(dumps(response.json(), indent = 4))
         id_ritm = response.json()[0]['id']
 
         #objects/obj-card/
