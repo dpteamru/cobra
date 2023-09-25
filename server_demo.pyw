@@ -30,7 +30,7 @@ class Server():
             else:
                 print(f'Обрабатываем сообщение {mess} \n')
                 
-                imei = mess[8 : 24]
+                imei = mess[7 : 23]
 
                 if 'E' in mess:
                     print('Отправляем тревогу')
@@ -65,7 +65,7 @@ class Server():
         basic = response.json()['basic']
         headers = {'Authorization': 'Basic ' + basic}
         
-        imei = mess[8 : 24]
+        imei = mess[7 : 23]
         print(imei)
 
         #objects/obj-search/
