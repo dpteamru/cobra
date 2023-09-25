@@ -19,6 +19,8 @@ class Server():
         rest_thread = Thread(target = self.consumer, args = (self.queue,))
         rest_thread.start()
 
+        self.alerts = []
+
     def consumer(self, queue):
         while True:
             try:
@@ -28,18 +30,28 @@ class Server():
             else:
                 print(f'Обрабатываем сообщение {mess} \n')
                 
-                id_pac = self.request_from_georitm_id_pac(mess)
+                imei = mess[8 : 24]
 
                 if 'E' in mess:
                     print('Отправляем тревогу')
                     print()
-                    self.send_alarm_to_pac(id_pac)
+                    id_pac = self.request_from_georitm_id_pac(mess)
+                    alert_pac = self.send_alarm_to_pac(id_pac)
+                    alert = {'imei': imei,
+                             'zona': mess[28 : 30],
+                             'plume': mess[30 : 33],
+                             'alert_id': alert_pac['alert_id']}
+                    self.alerts.add(alert)
                     print('Тревога отправлена')
                     print()
                 elif 'R' in mess:
                     print('Отменяем тревогу')
                     print()
-                    self.send_cancel_to_pac(id_pac)
+                    
+                    alert = [alert for alert in self.alerts if alert['imei'] == imei]
+                    id_alert = alert['alert_id']
+                    self.send_cancel_to_pac(id_alert)
+                    self.alerts.remove(alert)
                     print('Тревога отменена')
                     print()
                 
@@ -97,11 +109,13 @@ class Server():
                                 "comment": "Тестовая тревога"
                                 }]
                     }
-        response = post(url_test, headers = headers, json = payload)        
+        response = post(url_test, headers = headers, json = payload)
         
         print(dumps(response.json(), indent = 4))
 
-    def send_cancel_to_pac(self, id_pac):
+        return response.json()
+
+    def send_cancel_to_pac(self, id_alert):
         url_test = 'https://demo.pakvcmk.ru/api/login'
         payload = {'username': 'emp220923', 'password': '7i0f8g'}
         response = post(url_test, json = payload)
@@ -109,12 +123,12 @@ class Server():
         bearer = response.json()['token']
         headers = {'Authorization':'Bearer ' + bearer}
 
-        url_test = 'https://demo.pakvcmk.ru/api/alerts'
-        response = get(url_test, headers = headers)
-
-        for alert in response.json():
-            if alert['object_id'] == id_pac:
-                id_alert = alert['alert_id']
+##        url_test = 'https://demo.pakvcmk.ru/api/alerts'
+##        response = get(url_test, headers = headers)
+##
+##        for alert in response.json():
+##            if alert['object_id'] == id_pac:
+##                id_alert = alert['alert_id']
 
         url_test = 'https://demo.pakvcmk.ru/api/alert/' + id_alert + '/' + 'cancel'
         payload = {'comment': 'Тестирование'}
@@ -155,6 +169,6 @@ class Server():
 
 server = Server()
 server.connect_loop()
-#server.send_alarm_to_pac()
-#server.request_test()
-
+##id_test = '2027d463-56c5-49fd-9f43-7af80f5e44df'
+##server.send_alarm_to_pac(id_test)
+##server.send_cancel_to_pac('7ed09509-c9f3-4c81-8978-880720e4c41b')

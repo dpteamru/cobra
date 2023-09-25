@@ -1,4 +1,4 @@
 
 
 port = 20000
-url_api_georitm = 
+#url_api_georitm = 
