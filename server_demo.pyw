@@ -158,13 +158,13 @@ class Server():
                         
                         print(f'Получено из Ritm-link: {data_dec}')
 
-                        mess_code = data_dec[24 : 27]
-                        if (int(mess_code) < 300) and (('E' in data_dec) or ('R' in data_dec)):
-
-                            self.queue.put(data_dec)
-                            
-                            ack = chr(6).encode('utf-8')
-                            connection.sendall(ack)
+                        if ('E' in data_dec) or ('R' in data_dec):
+                            mess_code = data_dec[24 : 27]
+                            if (int(mess_code) < 300):
+                                self.queue.put(data_dec)
+                                
+                        ack = chr(6).encode('utf-8')
+                        connection.sendall(ack)
                     else:
                         print('Нет данных от:', client_address)
                         break
