@@ -84,6 +84,7 @@ class Server():
 
         id_pac = response.json()['settings']['equipmentIds']
         id_pac = id_pac[2 : -2]
+        print(id_pac)
 
         print(id_pac)
         return id_pac
