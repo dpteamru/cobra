@@ -38,6 +38,7 @@ class Server():
                     id_pac = self.request_from_georitm_id_pac(mess)
                     alert_pac = self.send_alarm_to_pac(id_pac)
                     alert = {'imei': imei,
+                             'code': mess[24 : 27]
                              'zona': mess[28 : 30],
                              'plume': mess[30 : 33],
                              'alert_id': alert_pac['alert_id']}
@@ -45,20 +46,20 @@ class Server():
                     print('Тревога отправлена')
                     print()
                 elif 'R' in mess:
-                    print('Отменяем тревогу')
+                    print('Восстановление')
                     print()
                     alert = [alert for alert in self.alerts if alert['imei'] == imei]
                     if alert != []:
                         alert = alert[0]
                         id_alert = alert['alert_id']
-                        self.send_cancel_to_pac(id_alert)
+                        self.send_event_to_pac(alert)
                         self.alerts.remove(alert)
-                        print('Отмена тревоги')
+                        print('Восстановление отправлено')
                         print()
                         
                     else:
                         print('Для данного сообщения о восстановлении нет сохраненных тревог')
-                        print('Не получилось послать отмену тревоги')
+                        print('Не получилось послать восстановление')
                 
                 queue.task_done()
                 
@@ -102,11 +103,6 @@ class Server():
         bearer = response.json()['token']
         headers = {'Authorization':'Bearer ' + bearer}
         
-        #id_test = '2027d463-56c5-49fd-9f43-7af80f5e44df'
-
-##        url_test = 'https://demo.pakvcmk.ru/api/objects/' + id_test
-##        response = get(url_test, headers = headers)
-        
         url_test = 'https://demo.pakvcmk.ru/api/alert'
         payload = {
                     "object_id": id_pac,
@@ -116,6 +112,7 @@ class Server():
                                 "comment": "Тестовая тревога"
                                 }]
                     }
+        
         response = post(url_test, headers = headers, json = payload)
         
         print(dumps(response.json(), indent = 4))
@@ -142,6 +139,28 @@ class Server():
         response = post(url_test, headers = headers, json = payload)
         
         print(response)
+
+    def send_event_to_pac(self, alert):
+        url_test = 'https://demo.pakvcmk.ru/api/login'
+        payload = {'username': 'emp220923', 'password': '7i0f8g'}
+        response = post(url_test, json = payload)
+
+        bearer = response.json()['token']
+        headers = {'Authorization':'Bearer ' + bearer}
+
+        url_test = 'https://demo.pakvcmk.ru/api/alert/' + id_alert + '/' + 'event'
+        imei = alert['imei']
+        code = alert['code']
+        comment = f'Восстановление (R). Прибор: {imei}. Код события: {code}.3'
+        payload = {
+            #"zone_id": "ID зоны",
+            #"type_id": 3,
+            "comment": comment
+            }
+        
+        response = post(url_test, headers = headers, json = payload)
+
+        print(dumps(response.json(), indent = 4))
 
     def connect_loop(self):
         while True:
@@ -181,5 +200,8 @@ server.connect_loop()
 ##id_pac = server.request_from_georitm_id_pac(mess)
 
 ##id_test = '2027d463-56c5-49fd-9f43-7af80f5e44df'
-##server.send_alarm_to_pac(id_test)
+##alert = server.send_alarm_to_pac('2027d463-56c5-49fd-9f43-7af80f5e44df')
+##print(alert)
+#server.send_event_to_pac('cf7f74a3-c691-4f67-a2d8-6d8ce15ea53f')
+
 ##server.send_cancel_to_pac('7ed09509-c9f3-4c81-8978-880720e4c41b')
