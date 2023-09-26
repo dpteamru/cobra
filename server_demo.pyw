@@ -127,13 +127,6 @@ class Server():
         bearer = response.json()['token']
         headers = {'Authorization':'Bearer ' + bearer}
 
-##        url_test = 'https://demo.pakvcmk.ru/api/alerts'
-##        response = get(url_test, headers = headers)
-##
-##        for alert in response.json():
-##            if alert['object_id'] == id_pac:
-##                id_alert = alert['alert_id']
-
         url_test = 'https://demo.pakvcmk.ru/api/alert/' + id_alert + '/' + 'cancel'
         payload = {'comment': 'Тестирование'}
         response = post(url_test, headers = headers, json = payload)
