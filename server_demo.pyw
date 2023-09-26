@@ -141,7 +141,7 @@ class Server():
         bearer = response.json()['token']
         headers = {'Authorization':'Bearer ' + bearer}
 
-        url_test = 'https://demo.pakvcmk.ru/api/alert/' + id_alert + '/' + 'event'
+        url_test = 'https://demo.pakvcmk.ru/api/alert/' + alert['alert_id'] + '/' + 'event'
         imei = alert['imei']
         code = alert['code']
         comment = f'Восстановление (R). Прибор: {imei}. Код события: {code}.3'
