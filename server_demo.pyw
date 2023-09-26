@@ -4,7 +4,7 @@ from requests import get, post
 from threading import Thread
 from queue import Empty, Queue
 from json import dumps
-from settings import port
+from settings import *
 
 class Server():
     def __init__(self):
@@ -64,46 +64,40 @@ class Server():
                 queue.task_done()
                 
     def request_from_georitm_id_pac(self, mess):
-        url_test = 'http://localhost:8080/restapi/users/login/'
-        payload = {'login': 'root', 'password': 'password'}
-        response = post(url_test, json = payload)
+        url = f'{url_api_georitm}users/login/'
+        payload = {'login': login_georitm, 'password': password_georitm}
+        response = post(url, json = payload)
         
         basic = response.json()['basic']
-        headers = {'Authorization': 'Basic ' + basic}
+        headers = {'Authorization': f'Basic {basic}'}
         
         imei = mess[7 : 23]
-        #print(imei)
 
-        #objects/obj-search/
-        url_test = 'http://localhost:8080/restapi/objects/obj-search/'
+        url = f'{url_api_georitm}objects/obj-search/'
         
         payload = {"objType":1, "q":imei}
-        response = post(url_test, headers = headers, json = payload)
+        response = post(url, headers = headers, json = payload)
 
-        #print(dumps(response.json(), indent = 4))
         id_ritm = response.json()[0]['id']
 
-        #objects/obj-card/
-        url_test = 'http://localhost:8080/restapi/objects/obj-card/'
+        url = f'{url_api_georitm}objects/obj-card/'
         payload = {'objectId': id_ritm}
-        response = post(url_test, headers = headers, json = payload)
+        response = post(url, headers = headers, json = payload)
 
         id_pac = response.json()['settings']['equipmentIds']
         id_pac = id_pac[2 : -2]
 
-        print(id_pac)
         return id_pac
 
     def send_alarm_to_pac(self, id_pac):
-        #https://pakvcmk.ru/api/login
-        url_test = 'https://demo.pakvcmk.ru/api/login'
-        payload = {'username': 'emp220923', 'password': '7i0f8g'}
-        response = post(url_test, json = payload)
+        url = f'{url_api_pac_demo}login'
+        payload = {'username': username_pac_demo, 'password': password_pac_demo}
+        response = post(url, json = payload)
 
         bearer = response.json()['token']
-        headers = {'Authorization':'Bearer ' + bearer}
+        headers = {'Authorization':f'Bearer {bearer}'}
         
-        url_test = 'https://demo.pakvcmk.ru/api/alert'
+        url = f'{url_api_pac_demo}alert'
         payload = {
                     "object_id": id_pac,
                     "events":[{
@@ -113,47 +107,49 @@ class Server():
                                 }]
                     }
         
-        response = post(url_test, headers = headers, json = payload)
+        response = post(url, headers = headers, json = payload)
         
-        print(dumps(response.json(), indent = 4))
+        #print(dumps(response.json(), indent = 4))
 
         return response.json()
 
-    def send_cancel_to_pac(self, id_alert):
-        url_test = 'https://demo.pakvcmk.ru/api/login'
-        payload = {'username': 'emp220923', 'password': '7i0f8g'}
-        response = post(url_test, json = payload)
-
-        bearer = response.json()['token']
-        headers = {'Authorization':'Bearer ' + bearer}
-
-        url_test = 'https://demo.pakvcmk.ru/api/alert/' + id_alert + '/' + 'cancel'
-        payload = {'comment': 'Тестирование'}
-        response = post(url_test, headers = headers, json = payload)
-        
-        print(response)
+##    def send_cancel_to_pac(self, id_alert):
+##        url_test = 'https://demo.pakvcmk.ru/api/login'
+##        payload = {'username': 'emp220923', 'password': '7i0f8g'}
+##        response = post(url_test, json = payload)
+##
+##        bearer = response.json()['token']
+##        headers = {'Authorization':'Bearer ' + bearer}
+##
+##        url_test = 'https://demo.pakvcmk.ru/api/alert/' + id_alert + '/' + 'cancel'
+##        payload = {'comment': 'Тестирование'}
+##        response = post(url_test, headers = headers, json = payload)
+##        
+##        print(response)
 
     def send_event_to_pac(self, alert):
-        url_test = 'https://demo.pakvcmk.ru/api/login'
-        payload = {'username': 'emp220923', 'password': '7i0f8g'}
-        response = post(url_test, json = payload)
+        url = f'{url_api_pac_demo}login'
+        payload = {'username': username_pac_demo, 'password': password_pac_demo}
+        response = post(url, json = payload)
 
         bearer = response.json()['token']
         headers = {'Authorization':'Bearer ' + bearer}
 
-        url_test = 'https://demo.pakvcmk.ru/api/alert/' + alert['alert_id'] + '/' + 'event'
+        alert_id = alert['alert_id']
         imei = alert['imei']
         code = alert['code']
+
+        url = f'{url_api_pac_demo}alert/{alert_id}/event'
         comment = f'Восстановление (R). Прибор: {imei}. Код события: {code}.3'
         payload = {
-            #"zone_id": "ID зоны",
-            #"type_id": 3,
-            "comment": comment
-            }
+                    #"zone_id": "ID зоны",
+                    #"type_id": 3,
+                    "comment": comment
+                    }
         
-        response = post(url_test, headers = headers, json = payload)
+        response = post(url, headers = headers, json = payload)
 
-        print(dumps(response.json(), indent = 4))
+        #print(dumps(response.json(), indent = 4))
 
     def connect_loop(self):
         while True:
