@@ -157,7 +157,7 @@ class Server():
             #"type_id": 3,
             "comment": comment
             }
-        
+        #
         response = post(url_test, headers = headers, json = payload)
 
         print(dumps(response.json(), indent = 4))
