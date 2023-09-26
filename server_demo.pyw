@@ -38,7 +38,7 @@ class Server():
                     id_pac = self.request_from_georitm_id_pac(mess)
                     alert_pac = self.send_alarm_to_pac(id_pac)
                     alert = {'imei': imei,
-                             'code': mess[24 : 27]
+                             'code': mess[24 : 27],
                              'zona': mess[28 : 30],
                              'plume': mess[30 : 33],
                              'alert_id': alert_pac['alert_id']}
