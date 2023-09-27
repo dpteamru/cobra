@@ -1,3 +1,4 @@
+import datetime
 
 port = 20000
 
@@ -10,3 +11,5 @@ username_pac_demo = 'emp220923'
 password_pac_demo = '7i0f8g'
 
 url_api_pac = 'https://pakvcmk.ru/api/'
+
+log_filename = 'log_' + datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")

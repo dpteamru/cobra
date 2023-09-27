@@ -1,3 +1,4 @@
+import sys
 import socket
 from time import time, localtime, strftime
 from requests import get, post
@@ -5,6 +6,9 @@ from threading import Thread
 from queue import Empty, Queue
 from json import dumps
 from settings import *
+
+log_file = open(log_filename, 'w')
+sys.stdout = log_file
 
 class Server():
     def __init__(self):
@@ -180,6 +184,7 @@ class Server():
                 print(e)
             finally:
                 connection.close()
+                log_file.close()
 
 
 server = Server()
