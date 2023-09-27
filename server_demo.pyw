@@ -7,8 +7,8 @@ from queue import Empty, Queue
 from json import dumps
 from settings import *
 
-log_file = open(log_filename, 'a+')
-sys.stdout = log_file
+# log_file = open(log_filename, 'a+')
+# sys.stdout = log_file
 
 class Server():
     def __init__(self):
@@ -184,7 +184,7 @@ class Server():
                 print(e)
             finally:
                 connection.close()
-                log_file.close()
+                # log_file.close()
 
 
 server = Server()
