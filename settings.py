@@ -2,7 +2,7 @@ import datetime
 
 port = 20000
 
-url_api_georitm = 'http://localhost:8080/restapi/'
+url_api_georitm = 'http://192.168.1.100:8080/restapi/'
 login_georitm = 'root'
 password_georitm = 'password'
 
