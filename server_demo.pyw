@@ -7,7 +7,7 @@ from queue import Empty, Queue
 from json import dumps
 from settings import *
 
-log_file = open(log_filename, 'w')
+log_file = open(log_filename, 'w+')
 sys.stdout = log_file
 
 class Server():
