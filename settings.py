@@ -12,4 +12,4 @@ password_pac_demo = '7i0f8g'
 
 url_api_pac = 'https://pakvcmk.ru/api/'
 
-log_filename = 'log_' + datetime.datetime.now().strftime("%Y-%m-%d-%H_%M_%S")
+# log_filename = 'log_' + datetime.datetime.now().strftime("%Y-%m-%d-%H_%M_%S")

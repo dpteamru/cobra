@@ -1,4 +1,4 @@
-FROM python:3.11
+FROM python:3.11-slim
 
 WORKDIR /cobra
 
@@ -7,7 +7,6 @@ ENV PYTHONUNBUFFERED 1
 
 COPY *.py /cobra
 
-RUN pip install sockets
-RUN pip install requests
+RUN pip install sockets && pip install requests
 
-CMD ["python", "server_demo.py"]
+CMD ["python", "cobra-integration-server.py"]
