@@ -24,6 +24,7 @@ class Server():
         rest_thread.start()
 
         self.alerts = []
+        self.codes = [120, 121, 122, 123, 130, 131, 132, 133, 134, 140]
 
     def consumer(self, queue):
         while True:
@@ -172,7 +173,7 @@ class Server():
 
                         if ('E' in data_dec) or ('R' in data_dec):
                             mess_code = data_dec[24 : 27]
-                            if (int(mess_code) < 300):
+                            if (int(mess_code) in self.codes):
                                 self.queue.put(data_dec)
                                 
                         ack = chr(6).encode('utf-8')
@@ -190,12 +191,3 @@ class Server():
 server = Server()
 server.connect_loop()
 
-#mess = '5337 181000000000001280E76000000¶'
-##id_pac = server.request_from_georitm_id_pac(mess)
-
-##id_test = '2027d463-56c5-49fd-9f43-7af80f5e44df'
-##alert = server.send_alarm_to_pac('2027d463-56c5-49fd-9f43-7af80f5e44df')
-##print(alert)
-#server.send_event_to_pac('cf7f74a3-c691-4f67-a2d8-6d8ce15ea53f')
-
-##server.send_cancel_to_pac('7ed09509-c9f3-4c81-8978-880720e4c41b')
