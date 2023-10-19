@@ -5,16 +5,21 @@ from requests import get, post
 from threading import Thread
 from queue import Empty, Queue
 from json import dumps
-from settings import *
+#from settings import *
 
 # log_file = open(log_filename, 'a+')
 # sys.stdout = log_file
 
 class Server():
     def __init__(self):
+
+        self.settings_file = 'config/settings.ini'
+        
         self.socket = socket.socket()
-        server_address = ('', port)
-        print('Старт сервера, порт {}'.format(server_address[1]))
+        host = self.get_settings('host')
+        port = int(self.get_settings('port'))
+        server_address = (host, port)
+        print(f'Старт сервера, хост {server_address[0]} порт {server_address[1]}')
         self.socket.bind(server_address)
         self.socket.listen()
         
@@ -25,6 +30,14 @@ class Server():
 
         self.alerts = []
         self.codes = [120, 121, 122, 123, 130, 131, 132, 133, 134, 140]
+
+    def get_settings(self, key):
+        with open(self.settings_file, 'r') as file:
+            lines = file.readlines()
+        for i in range(0, len(lines)):
+            line = lines[i][ : -1]
+            if key in line:
+                return line[line.find('=')+2 : ]
 
     def consumer(self, queue):
         while True:
@@ -69,8 +82,9 @@ class Server():
                 queue.task_done()
                 
     def request_from_georitm_id_pac(self, mess):
+        url_api_georitm = self.get_settings('url_api_georitm')
         url = f'{url_api_georitm}users/login/'
-        payload = {'login': login_georitm, 'password': password_georitm}
+        payload = {'login': self.get_settings('login_georitm'), 'password': self.get_settings('password_georitm')}
         response = post(url, json = payload)
         
         basic = response.json()['basic']
@@ -95,14 +109,15 @@ class Server():
         return id_pac
 
     def send_alarm_to_pac(self, id_pac):
-        url = f'{url_api_pac_demo}login'
-        payload = {'username': username_pac_demo, 'password': password_pac_demo}
+        url_api_pac = self.get_settings('url_api_pac')
+        url = f'{url_api_pac}login'
+        payload = {'username': self.get_settings('username_pac'), 'password': self.get_settings('password_pac')}
         response = post(url, json = payload)
 
         bearer = response.json()['token']
         headers = {'Authorization':f'Bearer {bearer}'}
         
-        url = f'{url_api_pac_demo}alert'
+        url = f'{url_api_pac}alert'
         payload = {
                     "object_id": id_pac,
                     "events":[{
@@ -133,8 +148,9 @@ class Server():
 ##        print(response)
 
     def send_event_to_pac(self, alert):
-        url = f'{url_api_pac_demo}login'
-        payload = {'username': username_pac_demo, 'password': password_pac_demo}
+        url_api_pac = self.get_settings('url_api_pac')
+        url = f'{url_api_pac}login'
+        payload = {'username': self.get_settings('username_pac'), 'password': self.get_settings('password_pac')}
         response = post(url, json = payload)
 
         bearer = response.json()['token']
@@ -144,7 +160,7 @@ class Server():
         imei = alert['imei']
         code = alert['code']
 
-        url = f'{url_api_pac_demo}alert/{alert_id}/event'
+        url = f'{url_api_pac}alert/{alert_id}/event'
         comment = f'Восстановление (R). Прибор: {imei}. Код события: {code}.3'
         payload = {
                     #"zone_id": "ID зоны",
@@ -187,7 +203,7 @@ class Server():
                 connection.close()
                 # log_file.close()
 
-
 server = Server()
-server.connect_loop()
 
+if __name__ == "__main__":
+    server.connect_loop()

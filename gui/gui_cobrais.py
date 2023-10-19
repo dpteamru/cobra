@@ -1,9 +1,22 @@
+'''
+Порядок действий на данный момент:
+1. Подгрузить образ в докер
+2. Создать папку c:\CobraIS
+3. Положить туда файл Settings.ini
+4. Запустить гуи через экзешник
+5. Можно нажимать на кнопки
+
+'''
+
+
 import tkinter as tk
 import tkinter.font as font
 
-from PIL import Image, ImageTk
+#from PIL import Image, ImageTk
 
 import os
+
+from subprocess import check_output
 
 def resource_path(relative_path):
     try:
@@ -14,17 +27,22 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 class EntryWithPlaceholder(tk.Entry):
-    def __init__(self, master = None, placeholder = None):
+    def __init__(self, master = None, placeholder = None, key = None, gui_settings = None):
         super().__init__(master)
 
         if placeholder is not None:
-            self.placeholder = placeholder
+            self.placeholder_start = placeholder
+            if key in gui_settings:
+                self.placeholder = f'{placeholder}: {gui_settings[key]}'
+            else:
+                self.placeholder = placeholder
             self.placeholder_color = '#787878'
-            self.default_fg_color = self['fg']
+            #self.default_fg_color = self['fg']
+            self.default_fg_color = '#787878'
 
             self.bind("<FocusIn>", self.focus_in)
             self.bind("<FocusOut>", self.focus_out)
-
+            
             self.put_placeholder()
 
         self.config(bg = '#f0f0f0', relief = tk.FLAT, font = 'Jost 14')
@@ -34,13 +52,21 @@ class EntryWithPlaceholder(tk.Entry):
         self['fg'] = self.placeholder_color
 
     def focus_in(self, *args):
-        if self['fg'] == self.placeholder_color:
+        self['fg'] = self.placeholder_color
+        if self.get() == self.placeholder_start:
             self.delete('0', 'end')
-            self['fg'] = self.default_fg_color
+            self.insert(0, f'{self.placeholder_start}: ')
+##        if self['fg'] == self.placeholder_color:
+##            self.delete('0', 'end')
+##            self['fg'] = self.default_fg_color
 
     def focus_out(self, *args):
-        if not self.get():
+        if self.get() in [f'{self.placeholder_start}: ', f'{self.placeholder_start}:'] or \
+           len(self.get()) < len(self.placeholder_start):
+            self.delete('0', 'end')
             self.put_placeholder()
+##        if not self.get():
+##            self.put_placeholder()
 
 class App(tk.Tk):
     def __init__(self):
@@ -62,13 +88,19 @@ class App(tk.Tk):
 ##        appImgP = tk.PhotoImage(file = resource_path('logo64.ico'))
 ##        self.iconphoto(0, appImgP)
 
-        self.running = False
+        self.running = self.check_status()
+        self.need_restart = False
 
-        self.img_oval_entry = tk.PhotoImage(file = 'img/oval_entry.png')
+        self.settings_file = resource_path('c:\CobraIS\settings.ini')
+
+        self.gui_settings = {}
+        self.load_settings()
+
+        self.img_oval_entry = tk.PhotoImage(file = resource_path('img/oval_entry.png'))
 
         #GeoRitm
         self.canvas_geo = tk.Canvas(self, height = 290, width = 344, bd = 0, highlightthickness = 0)#344
-        self.canvas_geo_img = tk.PhotoImage(file = 'img/frame_geo.png')
+        self.canvas_geo_img = tk.PhotoImage(file = resource_path('img/frame_geo.png'))
         self.canvas_geo.create_image(0, 0, anchor = 'nw', image = self.canvas_geo_img)
         self.canvas_geo.place(x = 42, y = 42)
 
@@ -79,24 +111,24 @@ class App(tk.Tk):
         self.label_geo_ip = tk.Label(self.canvas_geo, image = self.img_oval_entry)
         self.label_geo_ip.place(x = 30, y = 86, width = 280, height = 43)
 
-        self.entry_geo_ip = EntryWithPlaceholder(self.label_geo_ip, 'IP хоста')
+        self.entry_geo_ip = EntryWithPlaceholder(self.label_geo_ip, 'IP хоста', 'url_api_georitm', self.gui_settings)
         self.entry_geo_ip.place(x = 10, y = 0, width = 230, height = 40)
 
         self.label_geo_login = tk.Label(self.canvas_geo, image = self.img_oval_entry)
         self.label_geo_login.place(x = 30, y = 145, width = 280, height = 43)
 
-        self.entry_geo_login = EntryWithPlaceholder(self.label_geo_login, 'Логин')
+        self.entry_geo_login = EntryWithPlaceholder(self.label_geo_login, 'Логин', 'login_georitm', self.gui_settings)
         self.entry_geo_login.place(x = 10, y = 0, width = 230, height = 40)
 
         self.label_geo_pass = tk.Label(self.canvas_geo, image = self.img_oval_entry)
         self.label_geo_pass.place(x = 30, y = 204, width = 280, height = 43)
 
-        self.entry_geo_pass = EntryWithPlaceholder(self.label_geo_pass, 'Пароль')
+        self.entry_geo_pass = EntryWithPlaceholder(self.label_geo_pass, 'Пароль', 'password_georitm', self.gui_settings)
         self.entry_geo_pass.place(x = 10, y = 0, width = 230, height = 40)
 
         #ПАК ВсМК
         self.canvas_pak = tk.Canvas(self, height = 230, width = 344, bd = 0, highlightthickness = 0)
-        self.canvas_pak_img = tk.PhotoImage(file = 'img/frame_pak.png')
+        self.canvas_pak_img = tk.PhotoImage(file = resource_path('img/frame_pak.png'))
         self.canvas_pak.create_image(0, 0, anchor = 'nw', image = self.canvas_pak_img)
         self.canvas_pak.place(x = 400, y = 42)
 
@@ -107,18 +139,18 @@ class App(tk.Tk):
         self.label_pak_login = tk.Label(self.canvas_pak, image = self.img_oval_entry)
         self.label_pak_login.place(x = 30, y = 86, width = 280, height = 43)
 
-        self.entry_pak_login = EntryWithPlaceholder(self.label_pak_login, 'Логин')
+        self.entry_pak_login = EntryWithPlaceholder(self.label_pak_login, 'Логин', 'username_pac', self.gui_settings)
         self.entry_pak_login.place(x = 10, y = 0, width = 230, height = 40)
 
         self.label_pak_pass = tk.Label(self.canvas_pak, image = self.img_oval_entry)
         self.label_pak_pass.place(x = 30, y = 145, width = 280, height = 43)
 
-        self.entry_pak_pass = EntryWithPlaceholder(self.label_pak_pass, 'Пароль')
+        self.entry_pak_pass = EntryWithPlaceholder(self.label_pak_pass, 'Пароль', 'password_pac', self.gui_settings)
         self.entry_pak_pass.place(x = 10, y = 0, width = 230, height = 40)
 
         #CobraIS
         self.canvas_cis = tk.Canvas(self, height = 230, width = 702, bd = 0, highlightthickness = 0)
-        self.canvas_cis_img = tk.PhotoImage(file = 'img/frame_cis.png')
+        self.canvas_cis_img = tk.PhotoImage(file = resource_path('img/frame_cis.png'))
         self.canvas_cis.create_image(0, 0, anchor = 'nw', image = self.canvas_cis_img)
         self.canvas_cis.place(x = 42, y = 350)
 
@@ -129,27 +161,29 @@ class App(tk.Tk):
         self.label_cis_ip = tk.Label(self.canvas_cis, image = self.img_oval_entry)
         self.label_cis_ip.place(x = 30, y = 86, width = 280, height = 43)
 
-        self.entry_cis_ip = EntryWithPlaceholder(self.label_cis_ip, 'IP хоста')
+        self.entry_cis_ip = EntryWithPlaceholder(self.label_cis_ip, 'IP хоста', 'host', self.gui_settings)
         self.entry_cis_ip.place(x = 10, y = 0, width = 230, height = 40)
 
         self.label_cis_port = tk.Label(self.canvas_cis, image = self.img_oval_entry)
         self.label_cis_port.place(x = 30, y = 145, width = 280, height = 43)
 
-        self.entry_cis_port = EntryWithPlaceholder(self.label_cis_port, 'Порт')
+        self.entry_cis_port = EntryWithPlaceholder(self.label_cis_port, 'Порт', 'port', self.gui_settings)
         self.entry_cis_port.place(x = 10, y = 0, width = 230, height = 40)
 
-        self.label_cis_status = tk.Label(self.canvas_cis, text = 'Статус:  Сервер остановлен')
+        if self.running:
+            self.label_cis_status = tk.Label(self.canvas_cis, text = 'Статус:  Сервер запущен')
+        else:
+            self.label_cis_status = tk.Label(self.canvas_cis, text = 'Статус:  Сервер остановлен')
         self.label_cis_status.config(font = 'Jost 12', fg = '#c1c1c1', bg = '#2f2f2f')
         self.label_cis_status.place(x = 390, y = 96)
 
-##        self.btn_start_stop = tk.Button(self.canvas_cis, image = self.img_oval_button, command = self.start_stop)
-##        #self.btn_start_stop = tk.Button(self.canvas_cis, command = self.start_stop)
-##        self.btn_start_stop.config(text = 'ЗАПУСИТЬ', bd = 0, highlightthickness = 0, relief = 'flat')
-##        self.btn_start_stop.place(x = 390, y = 145)
-
         self.image_list = [tk.PhotoImage(file = resource_path('img/oval_button_start.png')),
                            tk.PhotoImage(file = resource_path('img/oval_button_stop.png'))]
-        self.img_oval_button = self.image_list[0]
+
+        if self.running:
+            self.img_oval_button = self.image_list[1]
+        else:
+            self.img_oval_button = self.image_list[0]
         self.label_cis_button = tk.Label(self.canvas_cis, image = self.img_oval_button)
         self.label_cis_button.place(x = 390, y = 145, width = 280, height = 43)
         self.label_cis_button.bind('<Button-1>', self.start_stop)
@@ -158,10 +192,6 @@ class App(tk.Tk):
         self.label_save_button = tk.Label(self, image = self.img_save_button)
         self.label_save_button.place(x = 260, y = 600, width = 280, height = 43)
         self.label_save_button.bind('<Button-1>', self.save_config)
-
-##        self.btn_save = tk.Button(self, text = 'Сохранить\nнастройки', command = self.save_config)
-##        self.btn_save['font'] = font.Font(size = 16)
-##        self.btn_save.place(x = 244, y = 180)
 
         mainmenu = tk.Menu(self)
         self.config(menu = mainmenu) 
@@ -176,20 +206,119 @@ class App(tk.Tk):
         mainmenu.add_cascade(label = 'Лицензия', menu = licensemenu)
         mainmenu.add_cascade(label = 'Справка', menu = helpmenu)
 
+    def load_settings(self):
+        # добавить проверку что папка существует
+        if not os.path.exists(self.settings_file): #если файла настроек .ini еще нет        
+            #проверяем есть ли наш контейнер
+            name_container = 'cobrais'
+            returned_output = check_output('docker ps -a').decode("utf-8")
+            if f' {name_container}' in returned_output:
+                #если есть копируем файл настроек из него
+                cmd = f'docker cp {name_container}:/cobra/config/settings.ini c:\CobraIS'
+                returned_output = check_output(cmd)                
+            else:
+                #если контейнера нет то просто создаем пустой файл настроек
+                open(self.settings_file, 'w').close()
+
+        #загружаем настройки в гуи
+        with open(self.settings_file, 'r') as file:
+            lines = file.readlines()
+            
+        for i in range(0, len(lines)):
+            line = lines[i]
+            line = line[ : -1]
+            if line != '':
+                j = line.find('=')
+                self.gui_settings[line[ : j-1]] = line[j+2 : ]        
+
     def start_stop(self, event):
         if self.running:
+            returned_output = check_output('docker stop cobrais').decode("utf-8")
+            print(f'{returned_output} stopped')
+            if self.need_restart: #если нужна перезагрузка
+                #остановить и удалить контейнер
+                returned_output = check_output('docker rm cobrais').decode("utf-8")
+                print(f'{returned_output} delete')
+            
             self.running = False
             self.label_cis_button.config(image = self.image_list[0])
             self.label_cis_status.config(text = 'Статус:  Сервер остановлен')
-        else:
-            self.running = True
+        else: #сервер остановлен
+            if self.need_restart: #если нужна перезагрузка
+                returned_output = check_output('docker ps -a').decode("utf-8")
+                if ' cobrais' in returned_output:
+                    returned_output = check_output('docker rm cobrais').decode("utf-8")
+                    print(f'{returned_output} delete')
+                
+                #пересобираем контейнер с новыми настройками сети
+                host = self.gui_settings['host']
+                port = self.gui_settings['port']
+                cmd = f'docker create --name cobrais -v C:\CobraIS:/cobra/config -p {port}:{port} dpteam/cobra-integration-server'
+                returned_output = check_output(cmd).decode("utf-8")
+                print(f'{returned_output} create')
+                returned_output = check_output('docker start cobrais').decode("utf-8")
+                print(f'{returned_output} start')
+
+                self.need_restart = False
+            else:
+                #если контейнера нет, то нужно его создать
+                cmd = f'docker ps --format ' + '"table {{.Names}}"'
+                returned_output = check_output(cmd).decode("utf-8")
+                print(returned_output)
+                if 'cobrais' not in returned_output:
+                    host = self.gui_settings['host']
+                    port = self.gui_settings['port']
+                    cmd = f'docker create --name cobrais -v C:\CobraIS:/cobra/config -p {port}:{port} --restart always dpteam/cobra-integration-server'
+                    returned_output = check_output(cmd).decode("utf-8")
+                    print(f'{returned_output} create')
+                    
+                #запускаем контейнер
+                returned_output = check_output('docker start cobrais').decode("utf-8")
+                print(f'{returned_output} start')
+                
+            
+            self.running = True            
             self.label_cis_button.config(image = self.image_list[1])
             self.label_cis_status.config(text = 'Статус:  Сервер запущен')
 
     def save_config(self, event):
-        pass
+        temp = {}
+        s = self.entry_cis_ip.get()
+        temp['host'] = s[s.find(':')+2 : ]
+        s = self.entry_cis_port.get()
+        temp['port'] = s[s.find(':')+2 : ]
+        s = self.entry_geo_ip.get()
+        temp['url_api_georitm'] = s[s.find(':')+2 : ]
+        s = self.entry_geo_login.get()
+        temp['login_georitm'] = s[s.find(':')+2 : ]
+        s = self.entry_geo_pass.get()
+        temp['password_georitm'] = s[s.find(':')+2 : ]
+        s = self.entry_pak_login.get()
+        temp['username_pac'] = s[s.find(':')+2 : ]
+        s = self.entry_pak_pass.get()
+        temp['password_pac'] = s[s.find(':')+2 : ]
+        temp['url_api_pac'] = 'https://demo.pakvcmk.ru/api/'
         
+        with open(self.settings_file, 'w') as file:
+            for key, value in temp.items():
+                file.write(f'{key} = {value}\n')
+                
+        if (self.gui_settings['host'] != temp['host']) or (self.gui_settings['port'] != temp['port']):
+            #если были изменены настройки сервера кобраис то нужно пересобирать контейнер
+            if self.running:
+                self.label_cis_status.config(text = 'Статус: Требуется перезагрузка')
+            self.need_restart = True
+        
+        self.gui_settings = temp
 
+    def check_status(self):
+        f = '"table {{.Names}}"'
+        cmd = f'docker ps --format ' + f
+        returned_output = check_output(cmd).decode("utf-8")
+        #print(returned_output)
+        if 'cobrais' in returned_output:
+            return True
+        return False
 
 if __name__ == "__main__":
     app = App()
