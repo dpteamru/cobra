@@ -8,7 +8,6 @@
 
 '''
 
-
 import tkinter as tk
 import tkinter.font as font
 
@@ -16,7 +15,15 @@ import tkinter.font as font
 
 import os
 
-from subprocess import check_output
+from subprocess import STARTUPINFO, STARTF_USESHOWWINDOW, SW_HIDE, check_output
+
+startupinfo = STARTUPINFO()
+startupinfo.dwFlags |= STARTF_USESHOWWINDOW
+startupinfo.wShowWindow = SW_HIDE
+
+def cmd(cmds):
+    out = check_output(cmds, startupinfo = startupinfo).decode("utf-8")
+    return out
 
 def resource_path(relative_path):
     try:
@@ -211,11 +218,12 @@ class App(tk.Tk):
         if not os.path.exists(self.settings_file): #если файла настроек .ini еще нет        
             #проверяем есть ли наш контейнер
             name_container = 'cobrais'
-            returned_output = check_output('docker ps -a').decode("utf-8")
+            
+            returned_output = cmd('docker ps -a')
             if f' {name_container}' in returned_output:
                 #если есть копируем файл настроек из него
-                cmd = f'docker cp {name_container}:/cobra/config/settings.ini c:\CobraIS'
-                returned_output = check_output(cmd)                
+                cmds = f'docker cp {name_container}:/cobra/config/settings.ini c:\CobraIS'
+                returned_output = cmd(cmds)
             else:
                 #если контейнера нет то просто создаем пустой файл настроек
                 open(self.settings_file, 'w').close()
@@ -233,47 +241,47 @@ class App(tk.Tk):
 
     def start_stop(self, event):
         if self.running:
-            returned_output = check_output('docker stop cobrais').decode("utf-8")
-            print(f'{returned_output} stopped')
+            returned_output = cmd('docker stop cobrais')
+            print(f'{returned_output[ : -1]} stopped')
             if self.need_restart: #если нужна перезагрузка
                 #остановить и удалить контейнер
-                returned_output = check_output('docker rm cobrais').decode("utf-8")
-                print(f'{returned_output} delete')
+                returned_output = cmd('docker rm cobrais')
+                print(f'{returned_output[ : -1]} delete')
             
             self.running = False
             self.label_cis_button.config(image = self.image_list[0])
             self.label_cis_status.config(text = 'Статус:  Сервер остановлен')
         else: #сервер остановлен
             if self.need_restart: #если нужна перезагрузка
-                returned_output = check_output('docker ps -a').decode("utf-8")
+                returned_output = cmd('docker ps -a')
                 if ' cobrais' in returned_output:
-                    returned_output = check_output('docker rm cobrais').decode("utf-8")
-                    print(f'{returned_output} delete')
+                    returned_output = cmd('docker rm cobrais')
+                    print(f'{returned_output[ : -1]} delete')
                 
                 #пересобираем контейнер с новыми настройками сети
                 host = self.gui_settings['host']
                 port = self.gui_settings['port']
-                cmd = f'docker create --name cobrais -v C:\CobraIS:/cobra/config -p {port}:{port} dpteam/cobra-integration-server'
-                returned_output = check_output(cmd).decode("utf-8")
-                print(f'{returned_output} create')
-                returned_output = check_output('docker start cobrais').decode("utf-8")
-                print(f'{returned_output} start')
+                cmds = f'docker create --name cobrais -v C:\CobraIS:/cobra/config -p {port}:{port} dpteam/cobra-integration-server'
+                returned_output = cmd(cmds)
+                print(f'{returned_output[ : -1]} create')
+                returned_output = cmd('docker start cobrais')
+                print(f'{returned_output[ : -1]} start')
 
                 self.need_restart = False
             else:
                 #если контейнера нет, то нужно его создать
-                cmd = f'docker ps --format ' + '"table {{.Names}}"'
-                returned_output = check_output(cmd).decode("utf-8")
-                print(returned_output)
+                cmds = 'docker ps --format "table {{.Names}}" -a'
+                returned_output = cmd(cmds)
+                print(returned_output[ : -1])
                 if 'cobrais' not in returned_output:
                     host = self.gui_settings['host']
                     port = self.gui_settings['port']
-                    cmd = f'docker create --name cobrais -v C:\CobraIS:/cobra/config -p {port}:{port} --restart always dpteam/cobra-integration-server'
-                    returned_output = check_output(cmd).decode("utf-8")
-                    print(f'{returned_output} create')
+                    cmds = f'docker create --name cobrais -v C:\CobraIS:/cobra/config -p {port}:{port} --restart always dpteam/cobra-integration-server'
+                    returned_output = cmd(cmds)
+                    print(f'{returned_output[ : -1]} create')
                     
                 #запускаем контейнер
-                returned_output = check_output('docker start cobrais').decode("utf-8")
+                returned_output = cmd('docker start cobrais')
                 print(f'{returned_output} start')
                 
             
@@ -312,9 +320,8 @@ class App(tk.Tk):
         self.gui_settings = temp
 
     def check_status(self):
-        f = '"table {{.Names}}"'
-        cmd = f'docker ps --format ' + f
-        returned_output = check_output(cmd).decode("utf-8")
+        cmds = 'docker ps --format "table {{.Names}}"'
+        returned_output = cmd(cmds)
         #print(returned_output)
         if 'cobrais' in returned_output:
             return True
