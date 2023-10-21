@@ -10,6 +10,7 @@
 
 import tkinter as tk
 import tkinter.font as font
+from threading import Thread
 
 import os
 
@@ -247,9 +248,14 @@ class App(tk.Tk):
         self.gui_settings['geo_port'] = s[s.find(':')+1 : ]
 
     def start_stop(self, event):
+        cmd_thread = Thread(target = self.start_stop_)
+        cmd_thread.start()
+        
+    def start_stop_(self):        
         if self.running:
             returned_output = cmd('docker stop cobrais')
             print(f'{returned_output[ : -1]} stopped')
+            
             if self.need_restart: #если нужна перезагрузка
                 #остановить и удалить контейнер
                 returned_output = cmd('docker rm cobrais')
