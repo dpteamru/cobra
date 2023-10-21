@@ -146,7 +146,7 @@ class App(tk.Tk):
 
         self.label_pak_header = tk.Label(self.canvas_pak, text = 'Настройки ПАК ВсМК')
         self.label_pak_header.config(font = 'Jost 22', fg = '#ffffff', bg = '#2f2f2f')
-        self.label_pak_header.place(x = 176, y = 20, width = 281, height = 54)
+        self.label_pak_header.place(x = 176, y = 20, width = 290, height = 54)
         
         self.label_pak_login = tk.Label(self.canvas_pak, image = self.img_oval_entry)
         self.label_pak_login.place(x = 30, y = 86, width = 280, height = 43)
