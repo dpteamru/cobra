@@ -1,27 +1,29 @@
 '''
 Порядок действий на данный момент:
 1. Подгрузить образ в докер
-2. Создать папку c:\CobraIS
-3. Положить туда файл settings.ini
-4. Запустить гуи через экзешник
-5. Можно нажимать на кнопки
+2. Запустить гуи через экзешник
+3. Можно нажимать на кнопки
 
 '''
 
 import tkinter as tk
 import tkinter.font as font
+from tkinter.messagebox import showwarning
 from threading import Thread
 
 import os
 
-from subprocess import STARTUPINFO, STARTF_USESHOWWINDOW, SW_HIDE, check_output
+from subprocess import STARTUPINFO, STARTF_USESHOWWINDOW, SW_HIDE, check_output, CalledProcessError
 
 startupinfo = STARTUPINFO()
 startupinfo.dwFlags |= STARTF_USESHOWWINDOW
 startupinfo.wShowWindow = SW_HIDE
 
 def cmd(cmds):
-    out = check_output(cmds, startupinfo = startupinfo).decode("utf-8")
+    try:
+        out = check_output(cmds, startupinfo = startupinfo).decode("utf-8")
+    except CalledProcessError as e:
+        out = e.output.decode("utf-8")
     return out
 
 def resource_path(relative_path):
@@ -94,8 +96,10 @@ class App(tk.Tk):
         icon = tk.PhotoImage(file = resource_path('img/logo24.png'))
         self.iconphoto(True, icon)
 
-        self.running = self.check_status()
+        self.running = False
         self.need_restart = False
+        self.is_docker_run = True
+        self.check_status()
 
         self.settings_file = resource_path('c:\CobraIS\settings.ini')
 
@@ -146,7 +150,7 @@ class App(tk.Tk):
 
         self.label_pak_header = tk.Label(self.canvas_pak, text = 'Настройки ПАК ВсМК')
         self.label_pak_header.config(font = 'Jost 22', fg = '#ffffff', bg = '#2f2f2f')
-        self.label_pak_header.place(x = 176, y = 20, width = 290, height = 54)
+        self.label_pak_header.place(x = 176, y = 20, width = 281, height = 54)
         
         self.label_pak_login = tk.Label(self.canvas_pak, image = self.img_oval_entry)
         self.label_pak_login.place(x = 30, y = 86, width = 280, height = 43)
@@ -219,19 +223,28 @@ class App(tk.Tk):
         mainmenu.add_cascade(label = 'Справка', menu = helpmenu)
 
     def load_settings(self):
-        # добавить проверку что папка существует
+        set_dir = resource_path('c:\CobraIS')
+        if not os.path.exists(set_dir):
+            os.mkdir(set_dir)
+
+        if not self.is_docker_run:
+            return
+        
         if not os.path.exists(self.settings_file): #если файла настроек .ini еще нет        
             #проверяем есть ли наш контейнер
             name_container = 'cobrais'
-            
-            returned_output = cmd('docker ps -a')
-            if f' {name_container}' in returned_output:
+            returned_output = cmd('docker ps --format "table {{.Names}}" -a')
+            if f'{name_container}' in returned_output:
                 #если есть копируем файл настроек из него
                 cmds = f'docker cp {name_container}:/cobra/config/settings.ini c:\CobraIS'
                 returned_output = cmd(cmds)
             else:
-                #если контейнера нет то просто создаем пустой файл настроек
-                open(self.settings_file, 'w').close()
+                #если контейнера нет, то нужно его создать и скопировать из него настройки
+                cmds = f'docker create --name cobrais -p 20000:20000 dpteam/cobra-integration-server'
+                returned_output = cmd(cmds)
+                print(f'{returned_output[ : -1]} create')
+                cmds = f'docker cp {name_container}:/cobra/config/settings.ini c:\CobraIS'
+                returned_output = cmd(cmds)
 
         #загружаем настройки в гуи
         with open(self.settings_file, 'r') as file:
@@ -256,10 +269,10 @@ class App(tk.Tk):
             returned_output = cmd('docker stop cobrais')
             print(f'{returned_output[ : -1]} stopped')
             
-            if self.need_restart: #если нужна перезагрузка
-                #остановить и удалить контейнер
-                returned_output = cmd('docker rm cobrais')
-                print(f'{returned_output[ : -1]} delete')
+##            if self.need_restart: #если нужна перезагрузка
+##                #остановить и удалить контейнер
+##                returned_output = cmd('docker rm cobrais')
+##                print(f'{returned_output[ : -1]} delete')
             
             self.running = False
             self.label_cis_button.config(image = self.image_list[0])
@@ -274,9 +287,12 @@ class App(tk.Tk):
                 #пересобираем контейнер с новыми настройками сети
                 host = self.gui_settings['host']
                 port = self.gui_settings['port']
-                cmds = f'docker create --name cobrais -v C:\CobraIS:/cobra/config -p {port}:{port} dpteam/cobra-integration-server'
+                #cmds = f'docker create --name cobrais -v C:\CobraIS:/cobra/config -p {port}:{port} dpteam/cobra-integration-server'
+                cmds = f'docker create --name cobrais -p {port}:{port} dpteam/cobra-integration-server'
                 returned_output = cmd(cmds)
                 print(f'{returned_output[ : -1]} create')
+                cmds = f'docker cp c:\CobraIS\settings.ini cobrais:/cobra/config/'
+                returned_output = cmd(cmds)
                 returned_output = cmd('docker start cobrais')
                 print(f'{returned_output[ : -1]} start')
 
@@ -289,16 +305,18 @@ class App(tk.Tk):
                 if 'cobrais' not in returned_output:
                     host = self.gui_settings['host']
                     port = self.gui_settings['port']
-                    cmds = f'docker create --name cobrais -v C:\CobraIS:/cobra/config -p {port}:{port} --restart always dpteam/cobra-integration-server'
+                    #cmds = f'docker create --name cobrais -v C:\CobraIS:/cobra/config -p {port}:{port} --restart always dpteam/cobra-integration-server'
+                    cmds = f'docker create --name cobrais -p {port}:{port} dpteam/cobra-integration-server'
                     returned_output = cmd(cmds)
                     print(f'{returned_output[ : -1]} create')
+                    cmds = f'docker cp c:\CobraIS\settings.ini cobrais:/cobra/config/'
+                    returned_output = cmd(cmds)
                     
                 #запускаем контейнер
                 returned_output = cmd('docker start cobrais')
                 print(f'{returned_output} start')
                 
-            
-            self.running = True            
+            self.running = True
             self.label_cis_button.config(image = self.image_list[1])
             self.label_cis_status.config(text = 'Статус:  Сервер запущен')
 
@@ -332,12 +350,23 @@ class App(tk.Tk):
             self.need_restart = True
         
         self.gui_settings = temp
+        cmds = f'docker cp c:\CobraIS\settings.ini cobrais:/cobra/config/'
+        returned_output = cmd(cmds)
 
     def check_status(self):
+        cmds = 'docker info'
+        returned_output = cmd(cmds)
+        #print(returned_output)
+        if 'Containers:' not in returned_output:
+            self.is_docker_run = False
+            showwarning(message = 'Нужно запустить докер!')
+            print('Докер не запущен')
+        
         cmds = 'docker ps --format "table {{.Names}}"'
         returned_output = cmd(cmds)
         #print(returned_output)
         if 'cobrais' in returned_output:
+            self.running = True
             return True
         return False
 
