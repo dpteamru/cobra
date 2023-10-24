@@ -204,10 +204,16 @@ class App(tk.Tk):
         self.label_cis_button.place(x = 340, y = 145, width = 280, height = 43)
         self.label_cis_button.bind('<Button-1>', self.start_stop)
 
-        self.img_save_button = tk.PhotoImage(file = resource_path('img/oval_button_save.png'))
-        self.label_save_button = tk.Label(self, image = self.img_save_button)
+        
+        self.image_save_button_list = [tk.PhotoImage(file = resource_path('img/oval_button_save_press.png')),
+                                       tk.PhotoImage(file = resource_path('img/oval_button_save_release.png'))]
+        self.label_save_button = tk.Label(self, image = self.image_save_button_list[1])
         self.label_save_button.place(x = 215, y = 690, width = 280, height = 43)
-        self.label_save_button.bind('<Button-1>', self.save_config)
+        #self.label_save_button.bind('<Button-1>', self.save_config)
+        
+        self.label_save_button.bind('<ButtonPress-1>', self.save_button_press)
+        self.label_save_button.bind('<ButtonRelease-1>', self.save_button_release)
+        #self.label_save_button.config(state = 'disabled')
 
         mainmenu = tk.Menu(self)
         self.config(menu = mainmenu) 
@@ -221,6 +227,13 @@ class App(tk.Tk):
         
         mainmenu.add_cascade(label = 'Лицензия', menu = licensemenu)
         mainmenu.add_cascade(label = 'Справка', menu = helpmenu)
+
+    def save_button_press(self, event):
+        self.label_save_button.config(image = self.image_save_button_list[0])
+
+    def save_button_release(self, event):
+        self.label_save_button.config(image = self.image_save_button_list[1])
+        self.save_config(event)
 
     def load_settings(self):
         set_dir = resource_path('c:\CobraIS')
