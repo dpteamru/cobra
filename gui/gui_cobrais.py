@@ -5,11 +5,13 @@
 3. Можно нажимать на кнопки
 
 '''
-
+import sys
 import tkinter as tk
+from tkinter import END, INSERT, SEL_FIRST, SEL_LAST
 import tkinter.font as font
 from tkinter.messagebox import showwarning
 from threading import Thread
+from pyperclip import paste
 
 import os
 
@@ -35,23 +37,34 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 class EntryWithPlaceholder(tk.Entry):
-    def __init__(self, master = None, placeholder = None, key = None, gui_settings = None):
+    def __init__(self, master = None, placeholder = None, key = None, gui_settings = None, hide_pass = False):
         super().__init__(master)
 
+        self._password: str = ''
+        self.placeholder_start = placeholder
+        self.hide_pass = hide_pass
+
         if placeholder is not None:
-            self.placeholder_start = placeholder
             if key in gui_settings:
-                self.placeholder = f'{placeholder}: {gui_settings[key]}'
+                self._password = gui_settings[key]
+                if self.hide_pass:
+                    self.placeholder = f'{placeholder}: {len(self._password)*"*"}'
+                else:
+                    self.placeholder = f'{placeholder}: {self._password}'
             else:
                 self.placeholder = placeholder
             self.placeholder_color = '#787878'
-            #self.default_fg_color = self['fg']
             self.default_fg_color = '#787878'
 
-            self.bind("<FocusIn>", self.focus_in)
-            self.bind("<FocusOut>", self.focus_out)
-            
             self.put_placeholder()
+
+        self.delay = 400
+        self.show = '*'
+        self._states = (0, 8, 9)
+
+        self.bind("<FocusIn>", self.focus_in)
+        self.bind("<FocusOut>", self.focus_out)
+        self.bind("<Key>", self._run)
 
         self.config(bg = '#f0f0f0', relief = tk.FLAT, font = 'Jost 14')
 
@@ -59,22 +72,95 @@ class EntryWithPlaceholder(tk.Entry):
         self.insert(0, self.placeholder)
         self['fg'] = self.placeholder_color
 
-    def focus_in(self, *args):
-        self['fg'] = self.placeholder_color
-        if self.get() == self.placeholder_start:
-            self.delete('0', 'end')
-            self.insert(0, f'{self.placeholder_start}: ')
-##        if self['fg'] == self.placeholder_color:
-##            self.delete('0', 'end')
-##            self['fg'] = self.default_fg_color
+    def focus_in(self, event):
+        self.delete(0, len(self.placeholder_start) + 2)
 
-    def focus_out(self, *args):
-        if self.get() in [f'{self.placeholder_start}: ', f'{self.placeholder_start}:'] or \
-           len(self.get()) < len(self.placeholder_start):
-            self.delete('0', 'end')
-            self.put_placeholder()
-##        if not self.get():
-##            self.put_placeholder()
+    def focus_out(self, event):
+        self.insert(0, f'{self.placeholder_start}: ')
+
+    def _char(self, event) -> str:
+        if event.keysym in ('Delete', 'BackSpace'):
+            return ""
+        elif event.char != '\\' and '\\' in f"{event.char=}":
+            return ""
+        elif event.num in (1, 2, 3):
+            return ""
+        elif event.state in self._states:
+            return event.char
+        return ""
+
+    def _delete(self, first, last=None):
+        self.tk.call(self._w, 'delete', first, last)
+
+    def _insert(self, index, string: str) -> None:
+        self.tk.call(self._w, 'insert', index, string)
+
+    def _run(self, event):
+
+        if not self.hide_pass:
+            return
+
+        def hide(index: int, lchar: int):
+            i = self.index(INSERT)
+            for j in range(lchar):
+                self._delete(index + j, index + 1 + j)
+                self._insert(index + j, self.show)
+            self.icursor(i)
+
+        if event.keysym == 'Delete':
+            if self.select_present():
+                start = self.index(SEL_FIRST)
+                end = self.index(SEL_LAST)
+            else:
+                start = self.index(INSERT)
+                end = start + 1
+
+            self._password = self._password[:start] + self._password[end:]
+
+        elif event.keysym == 'BackSpace':
+            if self.select_present():
+                start = self.index(SEL_FIRST)
+                end = self.index(SEL_LAST)
+            else:
+                if not (start := self.index(INSERT)):
+                    return
+                end = start
+                start -= 1
+                
+            self._password = self._password[ : start] + self._password[end : ]
+
+        elif event.state == 12 and event.keysym == 'v':
+            if self.select_present():
+                start = self.index(SEL_FIRST)
+                end = self.index(SEL_LAST)
+            else:
+                start = self.index(INSERT)
+                end = start
+            data = paste()
+
+            #print(self._password)
+            self._password = self._password[ : start] + data + self._password[end : ]
+            #print(self._password)
+            
+            self.after(self.delay, hide, start, len(data))
+
+        elif char := self._char(event):
+            if self.select_present():
+                start = self.index(SEL_FIRST)
+                end = self.index(SEL_LAST)
+            else:
+                start = self.index(INSERT)
+                end = start
+            
+            self._password = self._password[ : start] + char + self._password[end : ]
+
+            self.after(self.delay, hide, start, len(char))
+
+    def insert(self, index, string: str) -> None:
+        self.tk.call(self._w, 'insert', index, string)
+
+    def delete(self, first, last=None) -> None:
+        self.tk.call(self._w, 'delete', first, last)
 
 class App(tk.Tk):
     def __init__(self):
@@ -92,6 +178,7 @@ class App(tk.Tk):
         self.geometry(f'{w}x{h}+{x}+{y}')
         self.resizable(False, False)
         self.config(bg = '#292929')
+        self.title('CobraIS Configuration')
 
         icon = tk.PhotoImage(file = resource_path('img/logo24.png'))
         self.iconphoto(True, icon)
@@ -139,7 +226,8 @@ class App(tk.Tk):
         self.label_geo_pass = tk.Label(self.canvas_geo, image = self.img_oval_entry)
         self.label_geo_pass.place(x = 340, y = 145, width = 280, height = 43)
 
-        self.entry_geo_pass = EntryWithPlaceholder(self.label_geo_pass, 'Пароль', 'password_georitm', self.gui_settings)
+        self.entry_geo_pass = EntryWithPlaceholder(self.label_geo_pass, 'Пароль', 'password_georitm', self.gui_settings, hide_pass = True)
+        #self.entry_geo_pass.config(show = '*')
         self.entry_geo_pass.place(x = 10, y = 0, width = 230, height = 40)
 
         #ПАК ВсМК
@@ -161,7 +249,7 @@ class App(tk.Tk):
         self.label_pak_pass = tk.Label(self.canvas_pak, image = self.img_oval_entry)
         self.label_pak_pass.place(x = 340, y = 86, width = 280, height = 43)
 
-        self.entry_pak_pass = EntryWithPlaceholder(self.label_pak_pass, 'Пароль', 'password_pac', self.gui_settings)
+        self.entry_pak_pass = EntryWithPlaceholder(self.label_pak_pass, 'Пароль', 'password_pac', self.gui_settings, hide_pass = True)
         self.entry_pak_pass.place(x = 10, y = 0, width = 230, height = 40)
 
         #CobraIS
@@ -229,6 +317,7 @@ class App(tk.Tk):
         mainmenu.add_cascade(label = 'Справка', menu = helpmenu)
 
     def save_button_press(self, event):
+        self.label_save_button.focus()
         self.label_save_button.config(image = self.image_save_button_list[0])
 
     def save_button_release(self, event):
@@ -372,8 +461,10 @@ class App(tk.Tk):
         #print(returned_output)
         if 'Containers:' not in returned_output:
             self.is_docker_run = False
-            showwarning(message = 'Нужно запустить докер!')
+            showwarning(title = 'Ошибка', message = 'Нужно запустить докер!')
             print('Докер не запущен')
+            self.destroy()
+            sys.exit()
         
         cmds = 'docker ps --format "table {{.Names}}"'
         returned_output = cmd(cmds)
@@ -385,5 +476,4 @@ class App(tk.Tk):
 
 if __name__ == "__main__":
     app = App()
-    app.title('CobraIS Configuration')
     app.mainloop()
