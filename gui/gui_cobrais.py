@@ -11,7 +11,7 @@ from tkinter import END, INSERT, SEL_FIRST, SEL_LAST
 import tkinter.font as font
 from tkinter.messagebox import showwarning
 from threading import Thread
-from pyperclip import paste
+from pyperclip import paste, copy
 
 import os
 
@@ -60,11 +60,12 @@ class EntryWithPlaceholder(tk.Entry):
 
         self.delay = 400
         self.show = '*'
-        self._states = (0, 8, 9)
+        self._states = (0, 8, 9, 12)
 
         self.bind("<FocusIn>", self.focus_in)
         self.bind("<FocusOut>", self.focus_out)
-        self.bind("<Key>", self._run)
+        if self.hide_pass:
+            self.bind("<Key>", self._run)
 
         self.config(bg = '#f0f0f0', relief = tk.FLAT, font = 'Jost 14')
 
@@ -97,8 +98,11 @@ class EntryWithPlaceholder(tk.Entry):
 
     def _run(self, event):
 
-        if not self.hide_pass:
-            return
+        print(event)
+        print(event.state, event.keycode)
+
+##        if not self.hide_pass:
+##            return
 
         def hide(index: int, lchar: int):
             i = self.index(INSERT)
@@ -129,18 +133,27 @@ class EntryWithPlaceholder(tk.Entry):
                 
             self._password = self._password[ : start] + self._password[end : ]
 
-        elif event.state == 12 and event.keysym == 'v':
+        #elif event.state == 12 and event.keysym == 'v':
+        elif event.state == 12 and event.keycode == 86:
+            print('tut')
             if self.select_present():
                 start = self.index(SEL_FIRST)
                 end = self.index(SEL_LAST)
             else:
                 start = self.index(INSERT)
                 end = start
-            data = paste()
 
-            #print(self._password)
+            #dd = copy('ert45')
+            #dd = self.clipboard_get()
+            #print(dd)
+                
+            #data = paste()
+            data = self.clipboard_get()
+
+            print(data)
+            print(self._password)
             self._password = self._password[ : start] + data + self._password[end : ]
-            #print(self._password)
+            print(self._password)
             
             self.after(self.delay, hide, start, len(data))
 
