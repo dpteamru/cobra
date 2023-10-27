@@ -196,7 +196,7 @@ class App(tk.Tk):
         super().__init__()
 
         w = 712
-        h = 760
+        h = 819
  
         sw = self.winfo_screenwidth()
         sh = self.winfo_screenheight()
@@ -283,7 +283,7 @@ class App(tk.Tk):
         self.entry_pak_pass.place(x = 10, y = 0, width = 230, height = 40)
 
         #CobraIS
-        self.canvas_cis = tk.Canvas(self, height = 230, width = 652, bd = 0, highlightthickness = 0)
+        self.canvas_cis = tk.Canvas(self, height = 289, width = 652, bd = 0, highlightthickness = 0)
         self.canvas_cis_img = tk.PhotoImage(file = resource_path('img/frame_cis.png'))
         self.canvas_cis.create_image(0, 0, anchor = 'nw', image = self.canvas_cis_img)
         self.canvas_cis.place(x = 30, y = 450)
@@ -303,6 +303,12 @@ class App(tk.Tk):
 
         self.entry_cis_port = EntryWithPlaceholder(self.label_cis_port, 'Порт', 'port', self.gui_settings)
         self.entry_cis_port.place(x = 10, y = 0, width = 230, height = 40)
+
+        self.label_cis_codes = tk.Label(self.canvas_cis, image = self.img_oval_entry)
+        self.label_cis_codes.place(x = 30, y = 204, width = 280, height = 43)
+
+        self.entry_cis_codes = EntryWithPlaceholder(self.label_cis_codes, 'Коды', 'codes', self.gui_settings)
+        self.entry_cis_codes.place(x = 10, y = 0, width = 230, height = 40)
 
         if self.running:
             self.label_cis_status = tk.Label(self.canvas_cis, text = 'Статус:  Сервер запущен')
@@ -326,7 +332,7 @@ class App(tk.Tk):
         self.image_save_button_list = [tk.PhotoImage(file = resource_path('img/oval_button_save_press.png')),
                                        tk.PhotoImage(file = resource_path('img/oval_button_save_release.png'))]
         self.label_save_button = tk.Label(self, image = self.image_save_button_list[1])
-        self.label_save_button.place(x = 215, y = 690, width = 280, height = 43)
+        self.label_save_button.place(x = 215, y = 749, width = 280, height = 43)
         #self.label_save_button.bind('<Button-1>', self.save_config)
         
         self.label_save_button.bind('<ButtonPress-1>', self.save_button_press)
@@ -469,6 +475,8 @@ class App(tk.Tk):
         temp['username_pac'] = s[s.find(':')+2 : ]
         s = self.entry_pak_pass._password
         temp['password_pac'] = s
+        s = self.entry_cis_codes.get()
+        temp['codes'] = s[s.find(':')+2 : ]
         temp['url_api_pac'] = 'https://demo.pakvcmk.ru/api/'
         
         with open(self.settings_file, 'w') as file:

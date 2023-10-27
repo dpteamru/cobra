@@ -29,7 +29,9 @@ class Server():
         rest_thread.start()
 
         self.alerts = []
-        self.codes = [120, 121, 122, 123, 130, 131, 132, 133, 134, 140]
+        #self.codes = [120, 121, 122, 123, 130, 131, 132, 133, 134, 140]
+        codes = self.get_settings('codes')
+        self.codes = [int(code.split()[0]) for code in codes.split(',')]       
 
     def get_settings(self, key):
         with open(self.settings_file, 'r') as file:
