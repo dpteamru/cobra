@@ -365,8 +365,8 @@ class App(tk.Tk):
         if not os.path.exists(set_dir):
             os.mkdir(set_dir)
 
-        if not self.is_docker_run:
-            return
+##        if not self.is_docker_run:
+##            return
         
         if not os.path.exists(self.settings_file): #если файла настроек .ini еще нет        
             #проверяем есть ли наш контейнер
