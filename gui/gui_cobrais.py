@@ -3,15 +3,16 @@
 1. Подгрузить образ в докер
 2. Запустить гуи через экзешник
 3. Можно нажимать на кнопки
-
 '''
+
 import sys
 import tkinter as tk
 from tkinter import END, INSERT, SEL_FIRST, SEL_LAST
-import tkinter.font as font
+#import tkinter.font as font
+
 from tkinter.messagebox import showwarning
 from threading import Thread
-from pyperclip import paste, copy
+#from pyperclip import paste, copy
 
 import os
 
@@ -35,6 +36,27 @@ def resource_path(relative_path):
     except Exception:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
+
+from ctypes import windll, byref, create_unicode_buffer, create_string_buffer
+
+FR_PRIVATE  = 0x10
+FR_NOT_ENUM = 0x20
+
+def loadfont(fontpath, private = True, enumerable = False):
+    if isinstance(fontpath, bytes):
+        pathbuf = create_string_buffer(fontpath)
+        AddFontResourceEx = windll.gdi32.AddFontResourceExA
+    elif isinstance(fontpath, str):
+        pathbuf = create_unicode_buffer(fontpath)
+        AddFontResourceEx = windll.gdi32.AddFontResourceExW
+    else:
+        raise TypeError('fontpath must be of type str or unicode')
+
+    flags = (FR_PRIVATE if private else 0) | (FR_NOT_ENUM if not enumerable else 0)
+    numFontsAdded = AddFontResourceEx(byref(pathbuf), flags, 0)
+    return bool(numFontsAdded)
+
+loadfont(resource_path('Jost-Regular.ttf'))
 
 class EntryWithPlaceholder(tk.Entry):
     def __init__(self, master = None, placeholder = None, key = None, gui_settings = None, hide_pass = False):
@@ -68,6 +90,7 @@ class EntryWithPlaceholder(tk.Entry):
             self.bind("<Key>", self._run)
 
         self.config(bg = '#f0f0f0', relief = tk.FLAT, font = 'Jost 14')
+        #self.config(bg = '#f0f0f0', relief = tk.FLAT, font = 'Jost-Regular 14') 
 
     def put_placeholder(self):
         self.insert(0, self.placeholder)
@@ -98,11 +121,11 @@ class EntryWithPlaceholder(tk.Entry):
 
     def _run(self, event):
 
-        print(event)
-        print(event.state, event.keycode)
+##        print(event)
+##        print(event.state, event.keycode)
 
-##        if not self.hide_pass:
-##            return
+        if not self.hide_pass:
+            return
 
         def hide(index: int, lchar: int):
             i = self.index(INSERT)
@@ -133,9 +156,7 @@ class EntryWithPlaceholder(tk.Entry):
                 
             self._password = self._password[ : start] + self._password[end : ]
 
-        #elif event.state == 12 and event.keysym == 'v':
         elif event.state == 12 and event.keycode == 86:
-            print('tut')
             if self.select_present():
                 start = self.index(SEL_FIRST)
                 end = self.index(SEL_LAST)
@@ -143,17 +164,12 @@ class EntryWithPlaceholder(tk.Entry):
                 start = self.index(INSERT)
                 end = start
 
-            #dd = copy('ert45')
-            #dd = self.clipboard_get()
-            #print(dd)
-                
-            #data = paste()
             data = self.clipboard_get()
 
-            print(data)
-            print(self._password)
+##            print(data)
+##            print(self._password)
             self._password = self._password[ : start] + data + self._password[end : ]
-            print(self._password)
+##            print(self._password)
             
             self.after(self.delay, hide, start, len(data))
 
@@ -193,7 +209,7 @@ class App(tk.Tk):
         self.config(bg = '#292929')
         self.title('CobraIS Configuration')
 
-        icon = tk.PhotoImage(file = resource_path('img/logo24.png'))
+        icon = tk.PhotoImage(file = resource_path('img/logo32.png'))
         self.iconphoto(True, icon)
 
         self.running = False
@@ -222,6 +238,7 @@ class App(tk.Tk):
         self.label_geo_ip.place(x = 30, y = 86, width = 280, height = 43)
 
         self.entry_geo_ip = EntryWithPlaceholder(self.label_geo_ip, 'IP хоста', 'geo_ip', self.gui_settings)
+        
         self.entry_geo_ip.place(x = 10, y = 0, width = 230, height = 40)
 
         self.label_geo_port = tk.Label(self.canvas_geo, image = self.img_oval_entry)
@@ -355,7 +372,7 @@ class App(tk.Tk):
                 returned_output = cmd(cmds)
             else:
                 #если контейнера нет, то нужно его создать и скопировать из него настройки
-                cmds = f'docker create --name cobrais -p 20000:20000 dpteam/cobra-integration-server'
+                cmds = f'docker create --name cobrais -p 20000:20000 dpteam/cobrais'
                 returned_output = cmd(cmds)
                 print(f'{returned_output[ : -1]} create')
                 cmds = f'docker cp {name_container}:/cobra/config/settings.ini c:\CobraIS'
@@ -403,7 +420,7 @@ class App(tk.Tk):
                 host = self.gui_settings['host']
                 port = self.gui_settings['port']
                 #cmds = f'docker create --name cobrais -v C:\CobraIS:/cobra/config -p {port}:{port} dpteam/cobra-integration-server'
-                cmds = f'docker create --name cobrais -p {port}:{port} dpteam/cobra-integration-server'
+                cmds = f'docker create --name cobrais -p {port}:{port} dpteam/cobrais'
                 returned_output = cmd(cmds)
                 print(f'{returned_output[ : -1]} create')
                 cmds = f'docker cp c:\CobraIS\settings.ini cobrais:/cobra/config/'
@@ -421,7 +438,7 @@ class App(tk.Tk):
                     host = self.gui_settings['host']
                     port = self.gui_settings['port']
                     #cmds = f'docker create --name cobrais -v C:\CobraIS:/cobra/config -p {port}:{port} --restart always dpteam/cobra-integration-server'
-                    cmds = f'docker create --name cobrais -p {port}:{port} dpteam/cobra-integration-server'
+                    cmds = f'docker create --name cobrais -p {port}:{port} dpteam/cobrais'
                     returned_output = cmd(cmds)
                     print(f'{returned_output[ : -1]} create')
                     cmds = f'docker cp c:\CobraIS\settings.ini cobrais:/cobra/config/'
@@ -446,12 +463,12 @@ class App(tk.Tk):
         temp['url_api_georitm'] = f'http://{geo_ip[10 : ]}:{geo_port[6 : ]}/restapi/'
         s = self.entry_geo_login.get()
         temp['login_georitm'] = s[s.find(':')+2 : ]
-        s = self.entry_geo_pass.get()
-        temp['password_georitm'] = s[s.find(':')+2 : ]
+        s = self.entry_geo_pass._password
+        temp['password_georitm'] = s
         s = self.entry_pak_login.get()
         temp['username_pac'] = s[s.find(':')+2 : ]
-        s = self.entry_pak_pass.get()
-        temp['password_pac'] = s[s.find(':')+2 : ]
+        s = self.entry_pak_pass._password
+        temp['password_pac'] = s
         temp['url_api_pac'] = 'https://demo.pakvcmk.ru/api/'
         
         with open(self.settings_file, 'w') as file:
