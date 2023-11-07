@@ -12,7 +12,6 @@ from tkinter import END, INSERT, SEL_FIRST, SEL_LAST
 
 from tkinter.messagebox import showwarning
 from threading import Thread
-#from pyperclip import paste, copy
 
 import os
 
@@ -90,7 +89,61 @@ class EntryWithPlaceholder(tk.Entry):
             self.bind("<Key>", self._run)
 
         self.config(bg = '#f0f0f0', relief = tk.FLAT, font = 'Jost 14')
-        #self.config(bg = '#f0f0f0', relief = tk.FLAT, font = 'Jost-Regular 14') 
+
+        self.menu = tk.Menu(self, tearoff = 0)
+        self.menu.add_command(label = "Вырезать", command = self.cut_text)
+        self.menu.add_command(label = "Копировать", command = self.copy_text)
+        self.menu.add_command(label = "Вставить", command = self.paste_text)
+        self.menu.add_command(label = "Удалить", command = self.delete_text)
+
+        self.bind("<Button-3>", self.show_popup)
+
+    def show_popup(self, event):
+        self.menu.post(event.x_root, event.y_root)
+
+    def delete_text(self):
+        if self.select_present():
+            start = self.index(SEL_FIRST)
+            end = self.index(SEL_LAST)
+            self._delete(start, end)
+
+        if self.hide_pass:
+            self._password = self._password[:start] + self._password[end:]
+
+    def paste_text(self):
+        if self.select_present():
+            start = self.index(SEL_FIRST)
+            end = self.index(SEL_LAST)
+            self._delete(start, end)
+        else:
+            start = self.index(INSERT)
+            end = start
+
+        def hide(index: int, lchar: int):
+            i = self.index(INSERT)
+            for j in range(lchar):
+                self._delete(index + j, index + 1 + j)
+                self._insert(index + j, self.show)
+            self.icursor(i)
+
+        data = self.clipboard_get()
+        self._insert(start, data)
+
+        if self.hide_pass:
+            self._password = self._password[ : start] + data + self._password[end : ]
+            self.after(self.delay, hide, start, len(data))
+
+    def copy_text(self):
+        if self.select_present():
+            start = self.index(SEL_FIRST)
+            end = self.index(SEL_LAST)
+            
+            self.clipboard_clear()
+            self.clipboard_append(self.get()[start : end])
+
+    def cut_text(self):
+        self.copy_text()
+        self.delete_text()
 
     def put_placeholder(self):
         self.insert(0, self.placeholder)
@@ -195,8 +248,8 @@ class App(tk.Tk):
     def __init__(self):
         super().__init__()
 
-        w = 712
-        h = 819
+        w = 1048
+        h = 518
  
         sw = self.winfo_screenwidth()
         sh = self.winfo_screenheight()
@@ -257,12 +310,11 @@ class App(tk.Tk):
         self.label_geo_pass.place(x = 340, y = 145, width = 280, height = 43)
 
         self.entry_geo_pass = EntryWithPlaceholder(self.label_geo_pass, 'Пароль', 'password_georitm', self.gui_settings, hide_pass = True)
-        #self.entry_geo_pass.config(show = '*')
         self.entry_geo_pass.place(x = 10, y = 0, width = 230, height = 40)
 
         #ПАК ВсМК
-        self.canvas_pak = tk.Canvas(self, height = 170, width = 652, bd = 0, highlightthickness = 0)
-        self.canvas_pak_img = tk.PhotoImage(file = resource_path('img/frame_pak.png'))
+        self.canvas_pak = tk.Canvas(self, height = 230, width = 652, bd = 0, highlightthickness = 0)
+        self.canvas_pak_img = tk.PhotoImage(file = resource_path('img/frame_geo.png'))
         self.canvas_pak.create_image(0, 0, anchor = 'nw', image = self.canvas_pak_img)
         self.canvas_pak.place(x = 30, y = 270)
 
@@ -282,15 +334,21 @@ class App(tk.Tk):
         self.entry_pak_pass = EntryWithPlaceholder(self.label_pak_pass, 'Пароль', 'password_pac', self.gui_settings, hide_pass = True)
         self.entry_pak_pass.place(x = 10, y = 0, width = 230, height = 40)
 
+        self.label_pak_url = tk.Label(self.canvas_pak, image = self.img_oval_entry)
+        self.label_pak_url.place(x = 30, y = 145, width = 280, height = 43)
+
+        self.entry_pak_url = EntryWithPlaceholder(self.label_pak_url, 'Адрес', 'url_api_pac', self.gui_settings)
+        self.entry_pak_url.place(x = 10, y = 0, width = 230, height = 40)
+
         #CobraIS
-        self.canvas_cis = tk.Canvas(self, height = 289, width = 652, bd = 0, highlightthickness = 0)
+        self.canvas_cis = tk.Canvas(self, height = 407, width = 340, bd = 0, highlightthickness = 0)
         self.canvas_cis_img = tk.PhotoImage(file = resource_path('img/frame_cis.png'))
         self.canvas_cis.create_image(0, 0, anchor = 'nw', image = self.canvas_cis_img)
-        self.canvas_cis.place(x = 30, y = 450)
+        self.canvas_cis.place(x = 680, y = 30)
 
-        self.label_cis_header = tk.Label(self.canvas_cis, text = 'Настройки сервера CobraIS')
+        self.label_cis_header = tk.Label(self.canvas_cis, text = 'Настройки CobraIS')
         self.label_cis_header.config(font = 'Jost 22', fg = '#ffffff', bg = '#2f2f2f')
-        self.label_cis_header.place(x = 126, y = 20, width = 400, height = 54)
+        self.label_cis_header.place(x = 45, y = 20, width = 250, height = 54)
         
         self.label_cis_ip = tk.Label(self.canvas_cis, image = self.img_oval_entry)
         self.label_cis_ip.place(x = 30, y = 86, width = 280, height = 43)
@@ -315,24 +373,29 @@ class App(tk.Tk):
         else:
             self.label_cis_status = tk.Label(self.canvas_cis, text = 'Статус:  Сервер остановлен')
         self.label_cis_status.config(font = 'Jost 12', fg = '#c1c1c1', bg = '#2f2f2f')
-        self.label_cis_status.place(x = 340, y = 96)
+        self.label_cis_status.place(x = 30, y = 270)
 
-        self.image_list = [tk.PhotoImage(file = resource_path('img/oval_button_start.png')),
-                           tk.PhotoImage(file = resource_path('img/oval_button_stop.png'))]
+        #Кнопка "Запустить/Остановить"
+        self.image_list = [tk.PhotoImage(file = resource_path('img/oval_button_start_press.png')),
+                           tk.PhotoImage(file = resource_path('img/oval_button_start_release.png')),
+                           tk.PhotoImage(file = resource_path('img/oval_button_stop_press.png')),
+                           tk.PhotoImage(file = resource_path('img/oval_button_stop_release.png'))]
 
         if self.running:
-            self.img_oval_button = self.image_list[1]
+            self.img_oval_button = self.image_list[3]
         else:
-            self.img_oval_button = self.image_list[0]
-        self.label_cis_button = tk.Label(self.canvas_cis, image = self.img_oval_button)
-        self.label_cis_button.place(x = 340, y = 145, width = 280, height = 43)
-        self.label_cis_button.bind('<Button-1>', self.start_stop)
+            self.img_oval_button = self.image_list[1]
+        self.label_cis_button = tk.Label(self.canvas_cis, image = self.img_oval_button, cursor = 'hand2')
+        self.label_cis_button.place(x = 30, y = 322, width = 280, height = 43)
+        #self.label_cis_button.bind('<Button-1>', self.start_stop)
+        self.label_cis_button.bind('<ButtonPress-1>', self.startstop_button_press)
+        self.label_cis_button.bind('<ButtonRelease-1>', self.startstop_button_release)
 
-        
+        #Кнопка "Сохранить настройки"
         self.image_save_button_list = [tk.PhotoImage(file = resource_path('img/oval_button_save_press.png')),
                                        tk.PhotoImage(file = resource_path('img/oval_button_save_release.png'))]
-        self.label_save_button = tk.Label(self, image = self.image_save_button_list[1])
-        self.label_save_button.place(x = 215, y = 749, width = 280, height = 43)
+        self.label_save_button = tk.Label(self, image = self.image_save_button_list[1], cursor = 'hand2')
+        self.label_save_button.place(x = 710, y = 440, width = 280, height = 43)
         #self.label_save_button.bind('<Button-1>', self.save_config)
         
         self.label_save_button.bind('<ButtonPress-1>', self.save_button_press)
@@ -346,8 +409,8 @@ class App(tk.Tk):
         licensemenu.add_command(label = 'Ввести ключ')
 
         helpmenu = tk.Menu(mainmenu, tearoff=0)
-        helpmenu.add_command(label = 'О программе')
         helpmenu.add_command(label = 'Документация')
+        helpmenu.add_command(label = 'О программе')
         
         mainmenu.add_cascade(label = 'Лицензия', menu = licensemenu)
         mainmenu.add_cascade(label = 'Справка', menu = helpmenu)
@@ -360,13 +423,28 @@ class App(tk.Tk):
         self.label_save_button.config(image = self.image_save_button_list[1])
         self.save_config(event)
 
+    def startstop_button_press(self, event):
+        self.label_cis_button.focus()
+        if self.running:
+            self.label_cis_button.config(image = self.image_list[2])
+        else:
+            self.label_cis_button.config(image = self.image_list[0])
+
+    def startstop_button_release(self, event):
+        if self.running:
+            self.label_cis_button.config(image = self.image_list[3])
+        else:
+            self.label_cis_button.config(image = self.image_list[1])
+        self.start_stop(event)
+        
+
     def load_settings(self):
         set_dir = resource_path('c:\CobraIS')
         if not os.path.exists(set_dir):
             os.mkdir(set_dir)
 
-##        if not self.is_docker_run:
-##            return
+        if not self.is_docker_run:
+            return
         
         if not os.path.exists(self.settings_file): #если файла настроек .ini еще нет        
             #проверяем есть ли наш контейнер
@@ -397,6 +475,8 @@ class App(tk.Tk):
         s = self.gui_settings['url_api_georitm'][7 : -9]
         self.gui_settings['geo_ip'] = s[ : s.find(':')]
         self.gui_settings['geo_port'] = s[s.find(':')+1 : ]
+        s = self.gui_settings['url_api_pac']
+        self.gui_settings['url_api_pac'] = s[8 : -5]
 
     def start_stop(self, event):
         cmd_thread = Thread(target = self.start_stop_)
@@ -413,7 +493,7 @@ class App(tk.Tk):
 ##                print(f'{returned_output[ : -1]} delete')
             
             self.running = False
-            self.label_cis_button.config(image = self.image_list[0])
+            self.label_cis_button.config(image = self.image_list[1])
             self.label_cis_status.config(text = 'Статус:  Сервер остановлен')
         else: #сервер остановлен
             if self.need_restart: #если нужна перезагрузка
@@ -455,7 +535,7 @@ class App(tk.Tk):
                 print(f'{returned_output} start')
                 
             self.running = True
-            self.label_cis_button.config(image = self.image_list[1])
+            self.label_cis_button.config(image = self.image_list[3])
             self.label_cis_status.config(text = 'Статус:  Сервер запущен')
 
     def save_config(self, event):
@@ -477,7 +557,9 @@ class App(tk.Tk):
         temp['password_pac'] = s
         s = self.entry_cis_codes.get()
         temp['codes'] = s[s.find(':')+2 : ]
-        temp['url_api_pac'] = 'https://demo.pakvcmk.ru/api/'
+        s = self.entry_pak_url.get()
+        s = s[s.find(':')+2 : ]
+        temp['url_api_pac'] = f'https://{s}/api/'
         
         with open(self.settings_file, 'w') as file:
             for key, value in temp.items():
@@ -499,7 +581,7 @@ class App(tk.Tk):
         #print(returned_output)
         if 'Containers:' not in returned_output:
             self.is_docker_run = False
-            showwarning(title = 'Ошибка', message = 'Нужно запустить докер!')
+            showwarning(title = 'CobraIS Configuration', message = 'Запустите Docker')
             print('Докер не запущен')
             self.destroy()
             sys.exit()

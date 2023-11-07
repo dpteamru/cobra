@@ -186,9 +186,7 @@ class Server():
                     if data_dec != '':
                         t = strftime('%d.%m.%Y %H:%M:%S', localtime(time()))
                         print(t)
-                        
                         print(f'Получено из Ritm-link: {data_dec}')
-
                         if ('E' in data_dec) or ('R' in data_dec):
                             mess_code = data_dec[24 : 27]
                             if (int(mess_code) in self.codes):
