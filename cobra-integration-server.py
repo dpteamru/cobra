@@ -56,12 +56,12 @@ class Server():
                     print('Отправляем тревогу')
                     print()
                     id_pac = self.request_from_georitm_id_pac(mess)
-                    alert_pac = self.send_alarm_to_pac(id_pac)
                     alert = {'imei': imei,
                              'code': mess[24 : 27],
                              'zona': mess[28 : 30],
-                             'plume': mess[30 : 33],
-                             'alert_id': alert_pac['alert_id']}
+                             'plume': mess[30 : 33]}
+                    alert_pac = self.send_alarm_to_pac(id_pac, alert)
+                    alert['alert_id'] = alert_pac['alert_id']
                     self.alerts.append(alert)
                     print('Тревога отправлена')
                     print()
@@ -71,7 +71,7 @@ class Server():
                     alert = [alert for alert in self.alerts if alert['imei'] == imei]
                     if alert != []:
                         alert = alert[0]
-                        id_alert = alert['alert_id']
+                        #id_alert = alert['alert_id']
                         self.send_event_to_pac(alert)
                         self.alerts.remove(alert)
                         print('Восстановление отправлено')
@@ -110,7 +110,7 @@ class Server():
 
         return id_pac
 
-    def send_alarm_to_pac(self, id_pac):
+    def send_alarm_to_pac(self, id_pac, alert):
         url_api_pac = self.get_settings('url_api_pac')
         url = f'{url_api_pac}login'
         payload = {'username': self.get_settings('username_pac'), 'password': self.get_settings('password_pac')}
@@ -120,12 +120,15 @@ class Server():
         headers = {'Authorization':f'Bearer {bearer}'}
         
         url = f'{url_api_pac}alert'
+        imei = alert['imei']
+        code = alert['code']
+        comment = f'Восстановление (R). Прибор: {imei}. Код события: {code}.3'
         payload = {
                     "object_id": id_pac,
                     "events":[{
                                 #"zone_id": "ID зоны",
                                 "type_id": 0,
-                                "comment": "Тестовая тревога"
+                                "comment": comment
                                 }]
                     }
         
